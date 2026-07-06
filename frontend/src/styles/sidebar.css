@@ -1,0 +1,90 @@
+.sidebar{
+
+    width:280px;
+    height:100vh;
+
+    background:#081B33;
+
+    color:white;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-between;
+
+    position:fixed;
+
+    left:0;
+
+    top:0;
+
+    padding:30px 22px;
+
+    box-shadow:4px 0px 18px rgba(0,0,0,.12);
+
+}
+
+.logo h1{
+
+    font-size:30px;
+
+    margin-bottom:8px;
+
+}
+
+.logo p{
+
+    color:#A9C3DF;
+
+    font-size:14px;
+
+}
+
+nav{
+
+    margin-top:40px;
+
+}
+
+.menu-item{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    padding:16px;
+
+    margin-bottom:10px;
+
+    border-radius:14px;
+
+    transition:.25s;
+
+    cursor:pointer;
+
+}
+
+.menu-item:hover{
+
+    background:#0F4C81;
+
+}
+
+.icon{
+
+    font-size:20px;
+
+}
+
+.version{
+
+    color:#8EA9C6;
+
+    font-size:13px;
+
+    text-align:center;
+
+}

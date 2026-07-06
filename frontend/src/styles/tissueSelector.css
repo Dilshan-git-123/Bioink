@@ -1,0 +1,81 @@
+.tissue-section{
+
+    margin-top:35px;
+
+}
+
+.tissue-section h2{
+
+    color:#0F4C81;
+
+    margin-bottom:20px;
+
+}
+
+.tissue-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:20px;
+
+}
+
+.tissue-card{
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:28px;
+
+    text-align:center;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    border:2px solid transparent;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.05);
+
+}
+
+.tissue-card:hover{
+
+    transform:translateY(-6px);
+
+    border-color:#22A6F2;
+
+    box-shadow:0 12px 30px rgba(34,166,242,.18);
+
+}
+
+.tissue-icon{
+
+    font-size:40px;
+
+    margin-bottom:14px;
+
+}
+
+.tissue-card h3{
+
+    color:#1F2937;
+
+    font-size:18px;
+
+}
+
+.active-card{
+
+    border:2px solid #1565C0;
+
+    background:#EAF4FF;
+
+    transform:translateY(-5px);
+
+    box-shadow:0 10px 25px rgba(21,101,192,.20);
+
+}

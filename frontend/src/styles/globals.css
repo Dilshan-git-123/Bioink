@@ -1,0 +1,19 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Segoe UI,Arial,sans-serif;
+    background:#eef4fb;
+    color:#222;
+}
+
+button{
+    cursor:pointer;
+}
+
+input,select{
+    font-family:inherit;
+}

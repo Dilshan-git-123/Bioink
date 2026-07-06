@@ -1,0 +1,60 @@
+.final-mixing{
+
+    margin-top:25px;
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:20px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.05);
+
+}
+
+.final-mixing h2{
+
+    color:#0F4C81;
+
+    margin-bottom:25px;
+
+}
+
+.mix-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:20px;
+
+}
+
+.mix-grid div{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.mix-grid label{
+
+    margin-bottom:8px;
+
+    font-weight:600;
+
+}
+
+.mix-grid input,
+.mix-grid select{
+
+    padding:12px;
+
+    border:1px solid #DCE7F5;
+
+    border-radius:10px;
+
+    font-size:15px;
+
+}

@@ -1,0 +1,288 @@
+.app-layout{
+
+    display:flex;
+
+}
+
+.main-content{
+
+    margin-left:280px;
+
+    flex:1;
+
+    min-height:100vh;
+
+    background:#F4F8FC;
+
+}
+
+.workspace{
+
+    padding:40px;
+
+}
+
+.workspace h1{
+
+    font-size:42px;
+
+    color:#0F4C81;
+
+    margin-bottom:10px;
+
+}
+
+.workspace p{
+
+    font-size:18px;
+
+    color:#667085;
+
+}
+/* ===========================
+   Hero Section
+=========================== */
+
+.hero{
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:40px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    box-shadow:0 8px 30px rgba(0,0,0,.06);
+
+    overflow:hidden;
+
+    margin-bottom:35px;
+
+}
+
+.hero-left{
+
+    flex:1;
+
+}
+
+.hero-right{
+
+    flex:1;
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    align-items:center;
+
+}
+
+.hero-image{
+
+    width:420px;
+
+    max-width:100%;
+
+    height:auto;
+
+    object-fit:contain;
+
+}
+
+.hero h1{
+
+    font-size:52px;
+
+    color:#0F4C81;
+
+    margin-bottom:18px;
+
+}
+
+.hero p{
+
+    font-size:20px;
+
+    color:#667085;
+
+    line-height:1.8;
+
+    max-width:620px;
+
+}
+
+.hero-buttons{
+
+    display:flex;
+
+    gap:18px;
+
+    margin-top:30px;
+
+}
+
+.primary-btn{
+
+    background:#0F4C81;
+
+    color:white;
+
+    border:none;
+
+    padding:14px 28px;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.primary-btn:hover{
+
+    background:#1262a6;
+
+}
+
+.secondary-btn{
+
+    background:white;
+
+    border:2px solid #d9e5f2;
+
+    padding:14px 28px;
+
+    border-radius:12px;
+
+    font-size:15px;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.secondary-btn:hover{
+
+    background:#f4f8fc;
+
+}
+/* ===============================
+   Workspace Grid
+================================*/
+
+.workspace-grid{
+
+    display:grid;
+
+    grid-template-columns:2fr 1fr;
+
+    gap:25px;
+
+    margin-top:35px;
+
+}
+
+.left-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:25px;
+
+}
+
+.right-panel{
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:25px;
+
+    min-height:520px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.05);
+
+}
+
+.ai-title{
+
+    color:#0F4C81;
+
+    margin-bottom:18px;
+
+}
+
+.ai-card{
+
+    background:#F4F8FC;
+
+    border-radius:15px;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
+}
+
+.ai-card h4{
+
+    margin-bottom:8px;
+
+    color:#0F4C81;
+
+}
+
+.ai-card p{
+
+    color:#667085;
+
+    line-height:1.6;
+
+}
+
+/* Floating AI Assistant Button */
+.floating-ai-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0F4C81, #1D75C0);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: white;
+  box-shadow: 0 8px 24px rgba(15, 76, 129, 0.35), 0 0 12px rgba(15, 76, 129, 0.15);
+  z-index: 9999;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.floating-ai-btn:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 76, 129, 0.45), 0 0 20px rgba(15, 76, 129, 0.25);
+  background: linear-gradient(135deg, #1262a6, #2183d7);
+}
+
+.floating-ai-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 4px 12px rgba(15, 76, 129, 0.3);
+}
