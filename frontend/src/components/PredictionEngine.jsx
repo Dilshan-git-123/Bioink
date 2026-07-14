@@ -15,37 +15,47 @@ function PredictionEngine({
     try {
 
       setLoading(true);
-
       setError("");
 
       const payload = {
-        alginate: 0,
-        gelatin: 0,
-        pectin: 0,
-        pluronic: 0
+
+        tissue: selectedTissue,
+
+        materials: materials.map((material) => ({
+
+          biomaterial: material.biomaterial,
+
+          concentration: parseFloat(material.concentration) || 0,
+
+          temperature: parseFloat(material.temperature) || 0,
+
+          rpm: parseFloat(material.rpm) || 0,
+
+          time: parseFloat(material.time) || 0,
+
+          method: material.method || ""
+
+        })),
+
+        finalMixing: {
+
+          temperature: parseFloat(finalMixing?.temperature) || 0,
+
+          rpm: parseFloat(finalMixing?.rpm) || 0,
+
+          time: parseFloat(finalMixing?.time) || 0,
+
+          crosslinking: finalMixing?.crosslinking || ""
+
+        }
+
       };
 
-      materials.forEach((material) => {
-
-        const name = material.biomaterial.toLowerCase();
-
-        const value = parseFloat(material.concentration) || 0;
-
-        if (name === "alginate") payload.alginate = value;
-
-        if (name === "gelatin") payload.gelatin = value;
-
-        if (name === "pectin") payload.pectin = value;
-
-        if (name === "pluronic") payload.pluronic = value;
-
-      });
-
-      console.log("Sending to Backend:", payload);
+      console.log(JSON.stringify(payload, null, 2));
 
       const result = await runPrediction(payload);
 
-      console.log(JSON.stringify(result, null, 2));
+      console.log("Prediction:", result);
 
       setPrediction(result);
 
@@ -76,22 +86,15 @@ function PredictionEngine({
         <h2>🧠 AI Prediction Engine</h2>
 
         <p>
-
           Analyze your complete bioink formulation using
           BioInkAI's intelligent prediction engine.
-
         </p>
 
         <button
-
           className="predict-btn"
-
           onClick={handlePrediction}
-
         >
-
           ▶ Run AI Analysis
-
         </button>
 
       </div>

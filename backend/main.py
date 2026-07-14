@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import List, Optional
 
 from predictor import predict_bioink
+from validator import validate_bioink
+from protocol_generator import generate_protocol
 
 app = FastAPI(title="BioInkAI API")
 
@@ -14,12 +17,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class BioinkInput(BaseModel):
-    alginate: float = 0
-    gelatin: float = 0
-    pectin: float = 0
-    pluronic: float = 0
+# ------------------------------------------------
+# Reusable Pydantic Models
+# ------------------------------------------------
 
+class Material(BaseModel):
+    """A single biomaterial with its preparation parameters."""
+    biomaterial: str
+    concentration: float
+    temperature: float
+    rpm: float
+    time: float
+    method: str
+
+
+class FinalMixing(BaseModel):
+    """Parameters for the final mixing / crosslinking step."""
+    temperature: float
+    rpm: float
+    time: float
+    crosslinking: str
+
+
+class BioinkRequest(BaseModel):
+    """Top-level request: tissue target, list of materials, final mixing."""
+    tissue: str
+    materials: List[Material]
+    finalMixing: FinalMixing
+
+
+# ------------------------------------------------
+# Root
+# ------------------------------------------------
 
 @app.get("/")
 def root():
@@ -28,20 +57,66 @@ def root():
     }
 
 
+# ------------------------------------------------
+# Prediction Endpoint
+# ------------------------------------------------
+
 @app.post("/predict")
-def predict(data: BioinkInput):
+def predict(data: BioinkRequest):
 
-    materials = {
-        "alginate": data.alginate,
-        "gelatin": data.gelatin,
-        "pectin": data.pectin,
-        "pluronic": data.pluronic
-    }
+    # ----------------------------------------------------------
+    # Step 1: Validate every material against MATERIALS_DB ranges
+    # ----------------------------------------------------------
+    all_errors = []
+    all_warnings = []
 
-    result = predict_bioink(materials)
+    final_mixing = data.finalMixing.model_dump() if data.finalMixing else {}
 
-    return result
-    # ------------------------------------------------
+    for mat in data.materials:
+        result = validate_bioink(
+            biomaterial=mat.biomaterial,
+            concentration=mat.concentration,
+            preparation_temperature=mat.temperature,
+            final_mixing_temperature=final_mixing.get("temperature"),
+            mixing_rpm=mat.rpm,
+            mixing_time=mat.time,
+            crosslinking_method=final_mixing.get("crosslinking"),
+        )
+        all_errors.extend(result.get("errors", []))
+        all_warnings.extend(result.get("warnings", []))
+
+    # If any validation errors exist, return immediately.
+    if all_errors:
+        return {
+            "valid": False,
+            "errors": all_errors,
+            "warnings": all_warnings,
+        }
+
+    # ----------------------------------------------------------
+    # Step 2: Validation passed — run prediction
+    # ----------------------------------------------------------
+    materials = [mat.model_dump() for mat in data.materials]
+
+    prediction = predict_bioink(materials, final_mixing)
+
+    return prediction
+
+
+# ------------------------------------------------
+# Protocol Generator API
+# ------------------------------------------------
+
+@app.post("/protocol")
+def protocol(data: BioinkRequest):
+    materials = [mat.model_dump() for mat in data.materials]
+    final_mixing = data.finalMixing.model_dump() if data.finalMixing else {}
+    
+    protocol_data = generate_protocol(materials, final_mixing, data.tissue)
+    return protocol_data
+
+
+# ------------------------------------------------
 # Tissue-Specific Bioink Generator
 # ------------------------------------------------
 
@@ -99,47 +174,43 @@ def get_tissue_recommendation(tissue_name: str):
         "message": "No recommendation available for this tissue."
     }
 
-    # ------------------------------------------------
+
+# ------------------------------------------------
 # Literature Recommendation API
 # ------------------------------------------------
 
+# Lookup table: lowercase material name → paper metadata
+LITERATURE_DB = {
+    "alginate": {
+        "title": "Alginate-based bioinks for 3D bioprinting applications",
+        "authors": "Axpe E, Oyen ML",
+        "year": "2020",
+        "doi": "10.1016/j.biomaterials.2020.120016"
+    },
+    "gelatin": {
+        "title": "The Bioink: A comprehensive review on bioprintable materials",
+        "authors": "Hospodiuk M et al.",
+        "year": "2017",
+        "doi": "10.1016/j.biomaterials.2017.03.006"
+    },
+    "pluronic": {
+        "title": "Pluronic F127-based bioinks in tissue engineering",
+        "authors": "Müller M et al.",
+        "year": "2015",
+        "doi": "10.1002/adhm.201500123"
+    },
+}
+
+
 @app.post("/literature")
-def literature_recommendation(data: BioinkInput):
+def literature_recommendation(data: BioinkRequest):
 
     papers = []
 
-    if data.alginate > 0:
-        papers.append({
-            "title":
-            "Alginate-based bioinks for 3D bioprinting applications",
-            "authors":
-            "Axpe E, Oyen ML",
-            "year": "2020",
-            "doi":
-            "10.1016/j.biomaterials.2020.120016"
-        })
-
-    if data.gelatin > 0:
-        papers.append({
-            "title":
-            "The Bioink: A comprehensive review on bioprintable materials",
-            "authors":
-            "Hospodiuk M et al.",
-            "year": "2017",
-            "doi":
-            "10.1016/j.biomaterials.2017.03.006"
-        })
-
-    if data.pluronic > 0:
-        papers.append({
-            "title":
-            "Pluronic F127-based bioinks in tissue engineering",
-            "authors":
-            "Müller M et al.",
-            "year": "2015",
-            "doi":
-            "10.1002/adhm.201500123"
-        })
+    for mat in data.materials:
+        key = mat.biomaterial.lower()
+        if key in LITERATURE_DB and mat.concentration > 0:
+            papers.append(LITERATURE_DB[key])
 
     return {
         "papers": papers

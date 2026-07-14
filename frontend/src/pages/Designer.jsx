@@ -134,7 +134,11 @@ const [error, setError] = useState("");
   error={error}
 />
 
-<ProtocolGenerator />
+<ProtocolGenerator
+    materials={materials}
+    finalMixing={finalMixing}
+    selectedTissue={selectedTissue}
+/>
 
 <LiteraturePanel />
 

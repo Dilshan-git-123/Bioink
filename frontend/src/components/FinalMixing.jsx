@@ -88,7 +88,7 @@ function FinalMixing({
             }
           >
 
-            <option value="CaCl₂">CaCl₂</option>
+            <option value="CaCl2">CaCl₂</option>
 
             <option value="UV">UV</option>
 
