@@ -233,37 +233,12 @@ def _validate_material_params(mat, explanation, risks):
                     "). Insufficient mixing may yield poor homogeneity."
                 )
 
-    # --- Preparation method / crosslinking compatibility ---
-    compatible = profile.get("compatible_crosslinking_methods", [])
-    if method and compatible:
-        method_lower = method.lower()
-        is_compat = False
-        for item in compatible:
-            if any(token in method_lower for token in item.lower().split()):
-                is_compat = True
-                break
-            if method_lower in item.lower():
-                is_compat = True
-                break
-        if not is_compat:
-            penalties["mechanical"] += 8.0
-            penalties["printability"] += 5.0
-            explanation.append(
-                bio_name + " preparation method '" + method +
-                "' is not among the recommended crosslinking methods (" +
-                ", ".join(compatible) + "). Incompatible methods reduce "
-                "crosslinking efficiency and mechanical integrity."
-            )
-            risks.append(
-                bio_name + ": method '" + method +
-                "' may be incompatible — consider " +
-                ", ".join(compatible) + "."
-            )
-        else:
-            explanation.append(
-                bio_name + " preparation method '" + method +
-                "' is compatible with recommended crosslinking approaches."
-            )
+    # --- Preparation method ---
+    if method:
+        explanation.append(
+            bio_name + " preparation method '" + method +
+            "' selected for material preparation."
+        )
 
     return penalties
 

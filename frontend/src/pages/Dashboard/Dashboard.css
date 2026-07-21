@@ -1,0 +1,320 @@
+.dashboard-page {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Welcome Banner */
+.dashboard-banner {
+    background: linear-gradient(135deg, #0F4C81, #1A60A0);
+    border-radius: 20px;
+    padding: 35px 40px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(15, 76, 129, 0.15);
+}
+
+.banner-content h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+    color: white;
+}
+
+.banner-content p {
+    font-size: 16px;
+    color: #A9C3DF;
+    margin: 0;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-icon {
+    margin-right: 8px;
+}
+
+/* Overriding global button styles specifically for the dark banner if needed, 
+   but reusing standard .primary-btn and .secondary-btn from layout.css */
+.dashboard-banner .primary-btn {
+    background: white;
+    color: #0F4C81;
+}
+
+.dashboard-banner .primary-btn:hover {
+    background: #f4f8fc;
+}
+
+.dashboard-banner .secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.dashboard-banner .secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Statistics Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.stat-icon {
+    background: #F4F8FC;
+    color: #0F4C81;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.stat-title {
+    font-size: 15px;
+    color: #667085;
+    font-weight: 600;
+    margin: 0;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0F4C81;
+    margin-bottom: 8px;
+}
+
+.stat-trend {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.stat-trend.positive {
+    color: #2E90FA;
+}
+
+.stat-trend.neutral {
+    color: #667085;
+}
+
+/* Dashboard Main Grid */
+.dashboard-main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+}
+
+.dashboard-col-left, .dashboard-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-header h3 {
+    font-size: 18px;
+    color: #0F4C81;
+    margin: 0;
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: #0F4C81;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.text-btn:hover {
+    text-decoration: underline;
+}
+
+/* Chart Placeholder */
+.chart-placeholder {
+    height: 250px;
+    background: #F4F8FC;
+    border: 2px dashed #D9E5F2;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #8EA9C6;
+    gap: 12px;
+}
+
+.chart-icon {
+    font-size: 36px;
+}
+
+/* List Containers */
+.list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #F8FBFE;
+    border-radius: 10px;
+    border: 1px solid #E5EFF8;
+}
+
+.list-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.item-title {
+    font-size: 15px;
+    color: #1D2939;
+    margin: 0;
+}
+
+.item-subtitle {
+    font-size: 13px;
+    color: #667085;
+    margin: 0;
+}
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-badge.active {
+    background: #E0F2FE;
+    color: #026AA2;
+}
+
+.status-badge.completed {
+    background: #ECFDF3;
+    color: #027A48;
+}
+
+.status-badge.draft {
+    background: #F2F4F7;
+    color: #344054;
+}
+
+/* Activity Items */
+.activity-item {
+    display: flex;
+    gap: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #F0F4F8;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.activity-icon.success { background: #ECFDF3; color: #12B76A; }
+.activity-icon.warning { background: #FFFAEB; color: #F79009; }
+.activity-icon.info { background: #E0F2FE; color: #0EA5E9; }
+.activity-icon.neutral { background: #F2F4F7; color: #667085; }
+
+.activity-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.activity-message {
+    font-size: 14px;
+    color: #344054;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.activity-time {
+    font-size: 12px;
+    color: #98A2B3;
+}
+
+.ai-activity-card {
+    background: linear-gradient(to bottom, #ffffff, #F8FBFE);
+    border: 1px solid #E5EFF8;
+}
+
+.badge-count {
+    background: #0F4C81;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.mt-3 {
+    margin-top: 15px;
+}

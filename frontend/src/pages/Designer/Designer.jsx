@@ -1,17 +1,18 @@
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
-import TissueSelector from "../components/TissueSelector";
-import MaterialBuilder from "../components/MaterialBuilder";
-import FinalMixing from "../components/FinalMixing";
-import PredictionDashboard from "../components/PredictionDashboard";
-import ProtocolGenerator from "../components/ProtocolGenerator";
-import LiteraturePanel from "../components/LiteraturePanel";
-import { useState } from "react";
-import PredictionEngine from "../components/PredictionEngine";
 
-import "../styles/layout.css";
+import TissueSelector from "../../components/TissueSelector";
+import MaterialBuilder from "../../components/MaterialBuilder";
+import FinalMixing from "../../components/FinalMixing";
+import PredictionDashboard from "../../components/PredictionDashboard";
+import ProtocolGenerator from "../../components/ProtocolGenerator";
+import LiteraturePanel from "../../components/LiteraturePanel";
+import { useState, useEffect } from "react";
+import PredictionEngine from "../../components/PredictionEngine";
+import OptimizationPanel from "../../components/OptimizationPanel";
+import { getTissueRecommendation } from "../../services/tissueApi";
 
-import heroImage from "../assets/bioink-hero.png";
+import "../../styles/layout.css";
+
+import heroImage from "../../assets/bioink-hero.png";
 
 function Designer() {
   const [selectedTissue, setSelectedTissue] = useState("");
@@ -41,16 +42,28 @@ const [loading, setLoading] = useState(false);
 
 const [error, setError] = useState("");
 
+const [tissueRecommendation, setTissueRecommendation] = useState(null);
+  useEffect(() => {
+  if (!selectedTissue) {
+    setTissueRecommendation(null);
+    return;
+  }
+
+  async function fetchRecommendation() {
+    try {
+      const data = await getTissueRecommendation(selectedTissue);
+      setTissueRecommendation(data);
+    } catch (err) {
+      console.error(err);
+      setTissueRecommendation(null);
+    }
+  }
+
+  fetchRecommendation();
+}, [selectedTissue]);
+
   return (
-    <div className="app-layout">
-
-      <Sidebar />
-
-      <div className="main-content">
-
-        <Header />
-
-        <div className="workspace">
+    <>
 
           {/* ================= Hero Section ================= */}
 
@@ -134,6 +147,16 @@ const [error, setError] = useState("");
   error={error}
 />
 
+<OptimizationPanel
+
+    materials={materials}
+
+    finalMixing={finalMixing}
+
+    selectedTissue={selectedTissue}
+
+/>
+
 <ProtocolGenerator
     materials={materials}
     finalMixing={finalMixing}
@@ -179,11 +202,9 @@ const [error, setError] = useState("");
 
             </div>
 
-          </div>
+            </div>
 
-        </div>
-
-      </div>
+          
 
       <button 
         className="floating-ai-btn"
@@ -193,7 +214,7 @@ const [error, setError] = useState("");
         🤖
       </button>
 
-    </div>
+    </>
   );
 }
 

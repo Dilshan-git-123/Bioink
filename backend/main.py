@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 
 from predictor import predict_bioink
 from validator import validate_bioink
 from protocol_generator import generate_protocol
+from optimizer import optimize_bioink
+from tissue_engine import recommend_tissue
+from suggestion_engine import generate_suggestions
+from optimization_report import generate_optimization_report
 
 app = FastAPI(title="BioInkAI API")
 
@@ -65,14 +69,20 @@ def root():
 def predict(data: BioinkRequest):
 
     # ----------------------------------------------------------
-    # Step 1: Validate every material against MATERIALS_DB ranges
+    # Step 1: Validate every material
     # ----------------------------------------------------------
+
     all_errors = []
     all_warnings = []
 
-    final_mixing = data.finalMixing.model_dump() if data.finalMixing else {}
+    final_mixing = (
+        data.finalMixing.model_dump()
+        if data.finalMixing
+        else {}
+    )
 
     for mat in data.materials:
+
         result = validate_bioink(
             biomaterial=mat.biomaterial,
             concentration=mat.concentration,
@@ -82,10 +92,12 @@ def predict(data: BioinkRequest):
             mixing_time=mat.time,
             crosslinking_method=final_mixing.get("crosslinking"),
         )
+
         all_errors.extend(result.get("errors", []))
         all_warnings.extend(result.get("warnings", []))
 
-    # If any validation errors exist, return immediately.
+    # Return immediately if validation fails
+
     if all_errors:
         return {
             "valid": False,
@@ -94,81 +106,111 @@ def predict(data: BioinkRequest):
         }
 
     # ----------------------------------------------------------
-    # Step 2: Validation passed — run prediction
+    # Step 2: Run Prediction
     # ----------------------------------------------------------
+
     materials = [mat.model_dump() for mat in data.materials]
 
-    prediction = predict_bioink(materials, final_mixing)
+    prediction = predict_bioink(
+        materials,
+        final_mixing
+    )
+
+    # ----------------------------------------------------------
+    # Step 3: Generate Optimization Report
+    # ----------------------------------------------------------
+
+    optimization_report = generate_optimization_report(
+        materials,
+        prediction
+    )
+
+    prediction["optimization_report"] = optimization_report
+
+    # ----------------------------------------------------------
+    # Step 4: Generate Intelligent Suggestions
+    # ----------------------------------------------------------
+
+    print("\n==============================")
+    print("Prediction BEFORE Suggestions")
+    print("==============================")
+    print(prediction)
+
+    suggestions = generate_suggestions(prediction)
+
+    print("\n==============================")
+    print("Generated Suggestions")
+    print("==============================")
+    print(suggestions)
+
+    prediction["suggestions"] = suggestions["suggestions"]
+
+    print("\n==============================")
+    print("Final Prediction")
+    print("==============================")
+    print(prediction)
 
     return prediction
 
 
 # ------------------------------------------------
-# Protocol Generator API
+# AI Optimization Engine
+# ------------------------------------------------
+
+@app.post("/optimize")
+def optimize(data: BioinkRequest):
+
+    materials = [mat.model_dump() for mat in data.materials]
+
+    final_mixing = (
+        data.finalMixing.model_dump()
+        if data.finalMixing
+        else {}
+    )
+
+    result = optimize_bioink(
+        materials,
+        final_mixing
+    )
+
+    return result
+
+
+# ------------------------------------------------
+# Protocol Generator
 # ------------------------------------------------
 
 @app.post("/protocol")
 def protocol(data: BioinkRequest):
+
     materials = [mat.model_dump() for mat in data.materials]
-    final_mixing = data.finalMixing.model_dump() if data.finalMixing else {}
-    
-    protocol_data = generate_protocol(materials, final_mixing, data.tissue)
+
+    final_mixing = (
+        data.finalMixing.model_dump()
+        if data.finalMixing
+        else {}
+    )
+
+    protocol_data = generate_protocol(
+        materials,
+        final_mixing,
+        data.tissue
+    )
+
     return protocol_data
 
 
 # ------------------------------------------------
-# Tissue-Specific Bioink Generator
+# Tissue Recommendation
 # ------------------------------------------------
 
 @app.get("/tissue/{tissue_name}")
 def get_tissue_recommendation(tissue_name: str):
 
-    recommendations = {
+    recommendation = recommend_tissue(tissue_name)
 
-        "cartilage": {
-            "materials": [
-                {"name": "Alginate", "concentration": "3%"},
-                {"name": "Gelatin", "concentration": "7%"},
-                {"name": "Hyaluronic Acid", "concentration": "1%"}
-            ],
-            "crosslinker": "2% CaCl2",
-            "cell_type": "Chondrocytes"
-        },
-
-        "bone": {
-            "materials": [
-                {"name": "GelMA", "concentration": "10%"},
-                {"name": "Alginate", "concentration": "2%"},
-                {"name": "Hydroxyapatite", "concentration": "5%"}
-            ],
-            "crosslinker": "UV + CaCl2",
-            "cell_type": "Mesenchymal Stem Cells"
-        },
-
-        "skin": {
-            "materials": [
-                {"name": "Collagen", "concentration": "4%"},
-                {"name": "Gelatin", "concentration": "6%"},
-                {"name": "Alginate", "concentration": "2%"}
-            ],
-            "crosslinker": "2% CaCl2",
-            "cell_type": "Dermal Fibroblasts"
-        },
-
-        "heart": {
-            "materials": [
-                {"name": "GelMA", "concentration": "8%"},
-                {"name": "Fibrin", "concentration": "5%"}
-            ],
-            "crosslinker": "UV",
-            "cell_type": "Cardiomyocytes"
-        }
-    }
-
-    tissue = tissue_name.lower()
-
-    if tissue in recommendations:
-        return recommendations[tissue]
+    if recommendation:
+        return recommendation
 
     return {
         "message": "No recommendation available for this tissue."
@@ -176,31 +218,38 @@ def get_tissue_recommendation(tissue_name: str):
 
 
 # ------------------------------------------------
-# Literature Recommendation API
+# Literature Database
 # ------------------------------------------------
 
-# Lookup table: lowercase material name → paper metadata
 LITERATURE_DB = {
+
     "alginate": {
         "title": "Alginate-based bioinks for 3D bioprinting applications",
         "authors": "Axpe E, Oyen ML",
         "year": "2020",
         "doi": "10.1016/j.biomaterials.2020.120016"
     },
+
     "gelatin": {
         "title": "The Bioink: A comprehensive review on bioprintable materials",
         "authors": "Hospodiuk M et al.",
         "year": "2017",
         "doi": "10.1016/j.biomaterials.2017.03.006"
     },
+
     "pluronic": {
         "title": "Pluronic F127-based bioinks in tissue engineering",
         "authors": "Müller M et al.",
         "year": "2015",
         "doi": "10.1002/adhm.201500123"
-    },
+    }
+
 }
 
+
+# ------------------------------------------------
+# Literature Recommendation
+# ------------------------------------------------
 
 @app.post("/literature")
 def literature_recommendation(data: BioinkRequest):
@@ -208,7 +257,9 @@ def literature_recommendation(data: BioinkRequest):
     papers = []
 
     for mat in data.materials:
+
         key = mat.biomaterial.lower()
+
         if key in LITERATURE_DB and mat.concentration > 0:
             papers.append(LITERATURE_DB[key])
 

@@ -1,0 +1,11 @@
+material: gelatin
+properties:
+  recommended_concentration_range: [5.0, 20.0]
+  preparation_temperature_range: [37.0, 60.0]
+  final_mixing_temperature_range: [20.0, 37.0]
+  recommended_mixing_rpm: [100, 300]
+  recommended_mixing_time: [10, 30]
+  compatible_crosslinking_methods:
+    - Enzymatic (transglutaminase)
+    - Chemical (genipin)
+    - Physical (temperature)

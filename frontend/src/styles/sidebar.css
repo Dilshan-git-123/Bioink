@@ -67,7 +67,7 @@ nav{
 
 }
 
-.menu-item:hover{
+.menu-item:hover, .menu-item.active {
 
     background:#0F4C81;
 
@@ -87,4 +87,38 @@ nav{
 
     text-align:center;
 
+}
+
+.sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: #A9C3DF;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+}
+
+.logout-btn:hover {
+    background: rgba(220, 53, 69, 0.15);
+    border-color: rgba(220, 53, 69, 0.4);
+    color: #ff6b6b;
+}
+
+.logout-icon {
+    font-size: 18px;
+    flex-shrink: 0;
 }

@@ -1,0 +1,11 @@
+material: gelma
+properties:
+  recommended_concentration_range: [5.0, 20.0]
+  preparation_temperature_range: [37.0, 60.0]
+  final_mixing_temperature_range: [25.0, 37.0]
+  recommended_mixing_rpm: [100, 300]
+  recommended_mixing_time: [10, 30]
+  compatible_crosslinking_methods:
+    - UV (365 nm)
+    - Visible light (405 nm)
+    - Blue light

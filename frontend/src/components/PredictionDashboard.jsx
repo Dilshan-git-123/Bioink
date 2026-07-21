@@ -144,7 +144,6 @@ function PredictionDashboard({
   const getInsights = () => {
     const weaknesses = Array.isArray(prediction.risks) && prediction.risks.length > 0 ? [...prediction.risks] : [];
     const strengths = [];
-    const suggestions = [];
 
     prediction.scientific_explanation?.forEach(exp => {
       const lower = exp.toLowerCase();
@@ -155,22 +154,12 @@ function PredictionDashboard({
       }
     });
 
-    if (prediction.printability_score < 60) {
-        suggestions.push("Adjust polymer concentration or mixing time to improve printability and shape fidelity.");
-    }
-    if (prediction.cell_viability < 70) {
-        suggestions.push("Reduce processing temperature or final mixing shear stress to preserve cell viability.");
-    }
-    if (prediction.clogging_risk > 40) {
-        suggestions.push("Consider lower final RPM or higher temperature to reduce premature gelation and clogging risk.");
-    }
-    if (prediction.mechanical_strength < 40) {
-        suggestions.push("Increase structural polymer (e.g., Alginate/GelMA) concentration for better mechanical stability.");
-    }
-
     if (strengths.length === 0) strengths.push("Formulation base components are valid but synergistic properties require tuning.");
     if (weaknesses.length === 0) weaknesses.push("No significant risks or cytotoxic factors detected.");
-    if (suggestions.length === 0) suggestions.push("Formulation is optimized. Proceed to physical validation and printing.");
+
+    const suggestions = Array.isArray(prediction.suggestions) && prediction.suggestions.length > 0 
+      ? prediction.suggestions 
+      : [];
 
     return { strengths: Array.from(new Set(strengths)), weaknesses: Array.from(new Set(weaknesses)), suggestions };
   };
@@ -262,6 +251,7 @@ function PredictionDashboard({
             <div style={{ color: readiness.color, fontWeight: 700, fontSize: '16px' }}>{readiness.text}</div>
           </div>
         </div>
+        
       </div>
 
       {/* Prediction Cards Grid */}
@@ -331,9 +321,15 @@ function PredictionDashboard({
           <h3 style={{ margin: '0 0 16px 0', color: '#1e40af', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FaLightbulb /> Suggestions
           </h3>
-          <ul style={{ margin: 0, paddingLeft: '20px', color: '#1d4ed8', fontSize: '14px', lineHeight: 1.6 }}>
-            {insights.suggestions.map((s, i) => <li key={i} style={{ marginBottom: '8px' }}>{s}</li>)}
-          </ul>
+          {insights.suggestions.length > 0 ? (
+            <ul style={{ margin: 0, paddingLeft: '20px', color: '#1d4ed8', fontSize: '14px', lineHeight: 1.6 }}>
+              {insights.suggestions.map((s, i) => <li key={i} style={{ marginBottom: '8px' }}>{s}</li>)}
+            </ul>
+          ) : (
+            <p style={{ margin: 0, color: '#1d4ed8', fontSize: '14px', lineHeight: 1.6 }}>
+              No optimization suggestions available.
+            </p>
+          )}
         </div>
 
       </div>

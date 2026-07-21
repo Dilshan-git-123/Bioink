@@ -1,0 +1,341 @@
+.predictions-page {
+    animation: fadeIn 0.4s ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Header Section */
+.pred-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #E5EFF8;
+}
+
+.pred-title-area h1 {
+    font-size: 34px;
+    color: #081B33;
+    margin-bottom: 8px;
+}
+
+.pred-title-area p {
+    color: #475467;
+    font-size: 16px;
+    margin: 0;
+}
+
+.pred-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.pred-actions button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Top Metrics Row */
+.metrics-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(15, 76, 129, 0.04);
+    border: 1px solid rgba(15, 76, 129, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.metric-card h3 {
+    font-size: 15px;
+    color: #667085;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.metric-value {
+    font-size: 48px;
+    font-weight: 800;
+    color: #081B33;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.metric-value.highlight {
+    color: #0F4C81;
+}
+
+.metric-unit {
+    font-size: 20px;
+    color: #8EA9C6;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.metric-trend {
+    font-size: 14px;
+    font-weight: 500;
+}
+.metric-trend.positive { color: #12B76A; }
+.metric-trend.neutral { color: #667085; }
+
+.status-card {
+    align-items: flex-start;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.status-badge.ready {
+    background: #ECFDF3;
+    color: #027A48;
+}
+
+.status-desc {
+    color: #475467;
+    font-size: 15px;
+}
+
+/* Main Content Grid */
+.pred-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.pred-left-col, .pred-right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.pred-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 30px rgba(15, 76, 129, 0.04);
+    border: 1px solid rgba(15, 76, 129, 0.06);
+}
+
+.pred-card .card-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+}
+
+/* Radar Placeholder */
+.radar-placeholder {
+    height: 300px;
+    background: #F8FBFE;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.radar-grid-bg {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border: 1px dashed #A9C3DF;
+    border-radius: 50%;
+    opacity: 0.5;
+}
+.radar-placeholder p {
+    color: #0F4C81;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* Gauge Indicators */
+.gauges-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.gauge-indicator {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gauge-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.gauge-label { color: #344054; }
+.gauge-value { font-weight: 700; }
+
+.gauge-value.excellent { color: #12B76A; }
+.gauge-value.good { color: #0EA5E9; }
+.gauge-value.warning { color: #F79009; }
+
+.gauge-bar-bg {
+    height: 8px;
+    background: #F2F4F7;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.gauge-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-in-out;
+}
+
+.gauge-bar-fill.excellent { background: #12B76A; }
+.gauge-bar-fill.good { background: #0EA5E9; }
+.gauge-bar-fill.warning { background: #F79009; }
+
+/* AI Insights */
+.ai-insights-card {
+    background: linear-gradient(to bottom, #ffffff, #F8FBFE);
+}
+
+.insights-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.insight-item {
+    display: flex;
+    gap: 15px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    border-left: 4px solid transparent;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.insight-item.type-success { border-left-color: #12B76A; }
+.insight-item.type-warning { border-left-color: #F79009; }
+.insight-item.type-info { border-left-color: #0EA5E9; }
+
+.insight-icon {
+    font-size: 20px;
+    padding-top: 2px;
+}
+
+.text-success { color: #12B76A; }
+.text-warning { color: #F79009; }
+.text-info { color: #0EA5E9; }
+
+.insight-content h5 {
+    margin: 0 0 5px 0;
+    font-size: 15px;
+    color: #1D2939;
+}
+
+.insight-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #667085;
+    line-height: 1.5;
+}
+
+/* Material Analysis */
+.material-stats {
+    display: flex;
+    justify-content: space-between;
+    background: #F4F8FC;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.mat-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+}
+
+.mat-stat span {
+    font-size: 13px;
+    color: #667085;
+}
+
+.mat-stat strong {
+    font-size: 20px;
+    color: #0F4C81;
+}
+
+/* Optimization Suggestions */
+.optimization-card {
+    border: 1px solid #E0F2FE;
+}
+
+.suggestion-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #344054;
+}
+
+.suggestion-list li {
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.suggestion-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Compare Table */
+.compare-table-placeholder {
+    overflow-x: auto;
+}
+
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.compare-table th, .compare-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #F0F4F8;
+}
+
+.compare-table th {
+    font-weight: 600;
+    color: #667085;
+    font-size: 14px;
+}
+
+.compare-table td {
+    color: #344054;
+    font-weight: 500;
+}
+
+.highlight-cell {
+    background: #F8FBFE;
+    font-weight: 700 !important;
+    color: #0F4C81 !important;
+}

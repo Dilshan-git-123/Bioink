@@ -1,0 +1,12 @@
+material: alginate
+category: polysaccharide
+properties:
+  recommended_concentration_range: [1.0, 6.0]
+  preparation_temperature_range: [20.0, 37.0]
+  final_mixing_temperature_range: [20.0, 37.0]
+  recommended_mixing_rpm: [100, 400]
+  recommended_mixing_time: [5, 20]
+  compatible_crosslinking_methods:
+    - CaCl2
+    - BaCl2
+    - SrCl2

@@ -1,5 +1,6 @@
 import "./../styles/sidebar.css";
 
+import { NavLink, useNavigate } from "react-router-dom";
 import {
     FaHome,
     FaFlask,
@@ -8,51 +9,66 @@ import {
     FaBookMedical,
     FaMicroscope,
     FaRobot,
-    FaCog
+    FaCog,
+    FaSignOutAlt
 } from "react-icons/fa";
 
 function Sidebar() {
+
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        navigate('/login');
+    };
 
     const menuItems = [
 
         {
             icon: <FaHome />,
-            title: "Dashboard"
+            title: "Dashboard",
+            path: "/dashboard"
         },
 
         {
             icon: <FaFlask />,
-            title: "Designer"
+            title: "Designer",
+            path: "/designer"
         },
 
         {
             icon: <FaChartLine />,
-            title: "Predictions"
+            title: "Predictions",
+            path: "/predictions"
         },
 
         {
             icon: <FaDatabase />,
-            title: "Bioink Database"
+            title: "Bioink Database",
+            path: "/database"
         },
 
         {
             icon: <FaBookMedical />,
-            title: "Literature"
+            title: "Literature",
+            path: "/literature"
         },
 
         {
             icon: <FaMicroscope />,
-            title: "Experiments"
+            title: "Experiments",
+            path: "/experiments"
         },
 
         {
             icon: <FaRobot />,
-            title: "AI Assistant"
+            title: "AI Assistant",
+            path: "/assistant"
         },
 
         {
             icon: <FaCog />,
-            title: "Settings"
+            title: "Settings",
+            path: "/settings"
         }
 
     ];
@@ -76,9 +92,11 @@ function Sidebar() {
                 {
                     menuItems.map((item, index) => (
 
-                        <div
-                            className="menu-item"
+                        <NavLink
+                            to={item.path}
+                            className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}
                             key={index}
+                            style={{ textDecoration: 'none', color: 'inherit' }}
                         >
 
                             <span className="icon">
@@ -89,16 +107,25 @@ function Sidebar() {
                                 {item.title}
                             </span>
 
-                        </div>
+                        </NavLink>
 
                     ))
                 }
 
             </nav>
 
-            <div className="version">
+            <div className="sidebar-bottom">
 
-                Version 2.0
+                <button className="logout-btn" onClick={handleLogout}>
+                    <FaSignOutAlt className="logout-icon" />
+                    <span>Logout</span>
+                </button>
+
+                <div className="version">
+
+                    Version 2.0
+
+                </div>
 
             </div>
 
