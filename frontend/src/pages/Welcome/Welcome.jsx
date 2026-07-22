@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FaPlus, FaFolderOpen, FaBook, FaRobot, FaClock, FaLightbulb, FaFlask, FaCheckCircle, FaUserCircle } from 'react-icons/fa';
 import './Welcome.css';
 
+import welcomeHero from "../../assets/images/welcome-hero.png";
+
 const Welcome = () => {
     const navigate = useNavigate();
     const [greeting, setGreeting] = useState('');
@@ -32,16 +34,17 @@ const Welcome = () => {
                 {/* Header Section */}
                 <header className="welcome-header cinematic-fade-in stagger-1">
                     <div className="greeting-block">
+                        <span className="welcome-badge">AI-Powered 3D Bioprinting Platform</span>
                         <h1>{greeting}, Researcher 👋</h1>
                         <p>Welcome back to BioInkAI. Ready to continue today's research?</p>
                     </div>
                     
                     <div className="hero-illustration-container">
-                        <img src="../../assets/images/welcome-hero.png" alt="BioInkAI Bioprinter" className="welcome-hero-img" />
-                    </div>
-
-                    <div className="user-profile">
-                        <FaUserCircle className="profile-icon" />
+                        <img
+                            src={welcomeHero}
+                            alt="BioInkAI Bioprinter"
+                            className="welcome-hero-img"
+                        />
                     </div>
                 </header>
 
