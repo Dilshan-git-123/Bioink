@@ -1,0 +1,7 @@
+Protocol Name: Standard Bioink Preparation
+Steps:
+  - Step 1: Weigh the biomaterial powder.
+  - Step 2: Dissolve in solvent at the specified Preparation Temperature.
+  - Step 3: Stir at the specified Preparation RPM for the Preparation Time.
+  - Step 4: Degas the solution to remove air bubbles.
+  - Step 5: Load into the bioprinter cartridge.

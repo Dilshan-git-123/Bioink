@@ -3,8 +3,7 @@ import "../styles/protocolGenerator.css";
 import { generateProtocol } from "../services/protocolApi";
 import { downloadProtocolPDF } from "../utils/pdfGenerator";
 
-function ProtocolGenerator({ materials, finalMixing, selectedTissue }) {
-    const [protocol, setProtocol] = useState(null);
+function ProtocolGenerator({ materials, finalMixing, selectedTissue, protocol, setProtocol }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 

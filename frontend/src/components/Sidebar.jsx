@@ -10,7 +10,8 @@ import {
     FaMicroscope,
     FaRobot,
     FaCog,
-    FaSignOutAlt
+    FaSignOutAlt,
+    FaBook
 } from "react-icons/fa";
 
 function Sidebar() {
@@ -63,6 +64,12 @@ function Sidebar() {
             icon: <FaRobot />,
             title: "AI Assistant",
             path: "/assistant"
+        },
+
+        {
+            icon: <FaBook />,
+            title: "Knowledge Base",
+            path: "/knowledge-base"
         },
 
         {

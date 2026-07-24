@@ -1,0 +1,237 @@
+# ==============================================================================
+# BIOINKAI MASTER BIOMATERIAL TEMPLATE
+# ==============================================================================
+# This template defines the structure for all biomaterials in the knowledge base.
+# When adding new materials, copy this structure and fill in the values.
+# Use "[Placeholder]" or ranges where exact values are variable.
+# ==============================================================================
+
+Knowledge Base Metadata:
+  Template Version: "1.1"
+  Knowledge Base Version: "1.0"
+  Created By: "BioInkAI System"
+  Last Updated: "[Placeholder Date]"
+  Last Reviewed: "[Placeholder Date]"
+  Scientific Reviewer: "[Placeholder Name]"
+  Confidence Score: "[Placeholder]"
+  Verification Status: "Unverified"
+  Review Notes: "[Placeholder]"
+
+# 1. Material Information
+Material Information:
+  Material Name: "[Material Name]"
+  Scientific Name: "[Scientific Name]"
+  Common Names: 
+    - "[Common Name]"
+  Description: "[Placeholder Description]"
+  Source: "[Source]"
+  Material Type: "[Material Type]"
+  Grade: "[Grade]"
+  CAS Number: "[Placeholder CAS]"
+
+# 2. Physical Properties
+Physical Properties:
+  Appearance: White to yellowish-brown powder
+  Color: "[White / Yellowish-brown]"
+  Solubility: Soluble in water
+  Density: "[Placeholder] g/cm³"
+  Molecular Weight: "[Placeholder] kDa"
+  Viscosity Information: "[Placeholder] cP (Concentration dependent)"
+  Thermal Stability: Stable up to ~150°C (degrades at higher temps)
+  Storage Temperature: 2-8°C or room temperature (store dry)
+  Shelf Life: "[Placeholder] months"
+  Sterilization Method: 
+    - UV irradiation
+    - Sterile filtration (low concentration)
+    - Autoclaving (may reduce molecular weight)
+
+# Chemical Properties
+Chemical Properties:
+  Charge: "Anionic"
+  Ionic Nature: "Polyelectrolyte"
+  Functional Groups:
+    - Carboxyl groups
+    - Hydroxyl groups
+  Water Absorption: "High"
+  Hydrophilicity: "High"
+  Hydrophobicity: "Low"
+  pKa: "3.38 and 3.65 (M and G blocks)"
+  Chemical Stability: "Stable in dry, cool conditions"
+  Oxidation Sensitivity: "Low"
+  Scientific Notes: "Properties heavily depend on the M/G ratio (mannuronate to guluronate)."
+
+# Safety Information
+Safety Information:
+  Sterility Required: "Yes (for in vivo applications)"
+  Sterile Preparation Recommended: "Yes"
+  Storage Hazard: "None (non-toxic)"
+  Hazard Classification: "Non-hazardous"
+  Handling Precautions: "Standard laboratory PPE (gloves, lab coat)"
+  Disposal Method: "Standard biological/chemical waste"
+  Laboratory Safety Notes: "Avoid inhalation of fine powder."
+
+# 3. Preparation Parameters
+Preparation Parameters:
+  Recommended Concentration Range: 2-8% w/v
+  Preparation Temperature: Room temperature
+  Preparation Time: 2-4 hours
+  Mixing RPM: 500-1000
+  Hydration Time: "[Placeholder] hours"
+  Mixing Order: Slowly add powder to solvent while stirring
+  Recommended pH: 6.5-7.5
+  Buffer Used: 
+    - PBS
+    - HEPES
+    - DI Water
+  Preparation Notes: Degassing is highly recommended to remove air bubbles before printing.
+
+# 4. Printing Properties
+Printing Properties:
+  Compatible Printing Methods:
+    - Extrusion-based
+  Recommended Printing Temperature: Room temperature (20-25°C)
+  Recommended Nozzle Gauge: 22G - 27G
+  Recommended Pressure Range: "[Placeholder] kPa"
+  Printing Speed: "[Placeholder] mm/s"
+  Shape Fidelity: High (post-crosslinking)
+  Printability Notes: Shear-thinning behavior makes it highly suitable for extrusion.
+
+# 5. Crosslinking Information
+Crosslinking Information:
+  Compatible Crosslinkers:
+    - CaCl₂
+    - BaCl₂
+    - CaSO₄
+  Incompatible Crosslinkers:
+    - "[List incompatible crosslinkers]"
+  Crosslinking Mechanism: Ionic crosslinking via divalent cations (egg-box model).
+  Recommended Crosslinker Concentration: 50-100 mM (for CaCl₂)
+  Crosslinking Time: "[Placeholder] minutes"
+  Scientific Notes: Barium crosslinks more strongly than calcium, but toxicity must be considered for live cells.
+
+# 6. Biological Properties
+Biological Properties:
+  Cell Adhesion: Poor (lacks mammalian cell adhesion motifs like RGD)
+  Cell Viability: High (typically >90%)
+  Biocompatibility: Excellent
+  Biodegradability: Slow in mammals (lacks alginate lyase)
+  Cytotoxicity: None
+  Immunogenicity: Low (if highly purified)
+
+# 7. Mechanical Properties
+Mechanical Properties:
+  Elastic Modulus: "[Placeholder] kPa"
+  Compressive Strength: "[Placeholder] kPa"
+  Tensile Strength: "[Placeholder] MPa"
+  Swelling Behaviour: High swelling in aqueous environments
+  Stability: Gradually loses stiffness in physiological solutions due to ion exchange.
+
+# 8. Tissue Engineering Applications
+Tissue Engineering Applications:
+  Bone: Suitable (often combined with hydroxyapatite)
+  Cartilage: Highly suitable (excellent chondrocyte viability)
+  Skin: Suitable (used for wound dressings)
+  Neural: "[Suitable / Not Suitable]"
+  Cardiac: "[Suitable / Not Suitable]"
+  Liver: "[Suitable / Not Suitable]"
+  Lung: "[Suitable / Not Suitable]"
+  Muscle: "[Suitable / Not Suitable]"
+  Blood Vessel: "[Suitable / Not Suitable]"
+  Other Suitable Applications: 
+    - Drug delivery
+    - Cell microencapsulation
+
+# 9. Compatibility
+Compatibility:
+  Compatible Biomaterials:
+    - Gelatin
+    - Pectin
+    - Nanocellulose
+    - GelMA
+  Incompatible Biomaterials:
+    - "[Placeholder]"
+  Common Formulations:
+    - Alginate + Gelatin (enhances cell adhesion)
+    - Alginate + Nanocellulose (enhances mechanical strength)
+  Synergistic Effects: Blending with gelatin provides RGD sites for cell attachment while maintaining structural fidelity.
+
+# 10. Advantages
+Advantages:
+  - Excellent biocompatibility
+  - Extremely fast and gentle gelation process
+  - Highly tunable mechanical properties by adjusting calcium concentration
+  - Commercially available and cost-effective
+
+# 11. Limitations
+Limitations:
+  - Poor cell adhesion alone
+  - Slow degradation in vivo
+  - Loss of mechanical stability over time in physiological buffers
+
+# AI Prediction Parameters
+AI Prediction Parameters:
+  Expected Printability: "[Placeholder]"
+  Expected Shape Fidelity: "[Placeholder]"
+  Expected Cell Viability: "[Placeholder]"
+  Expected Mechanical Strength: "[Placeholder]"
+  Expected Elasticity: "[Placeholder]"
+  Expected Swelling: "[Placeholder]"
+  Expected Degradation Rate: "[Placeholder]"
+  Expected Bioactivity: "[Placeholder]"
+  Expected Cost: "[Placeholder]"
+  Expected Difficulty of Printing: "[Placeholder]"
+  Expected Nozzle Clogging Risk: "[Placeholder]"
+  Expected Confidence Score: "[Placeholder]"
+
+# 12. Optimization Guidelines
+Optimization Guidelines:
+  If viscosity is low: Increase alginate concentration or blend with nanocellulose.
+  If shape fidelity is poor: Increase crosslinker concentration or pre-crosslink lightly before printing.
+  If clogging occurs: Decrease concentration, increase nozzle diameter, or improve dissolution.
+  If degradation is too fast: Use a stronger crosslinker (e.g., BaCl₂) or increase polymer concentration.
+  If degradation is too slow: Oxidize alginate or blend with rapidly degrading polymers (e.g., gelatin).
+
+# 13. Scientific References
+Scientific References:
+  Preparation References:
+    - Title: "[Placeholder Title]"
+      Authors: "[Placeholder Authors]"
+      Journal: "[Placeholder Journal]"
+      Year: "[Placeholder Year]"
+      DOI: "[Placeholder DOI]"
+      Evidence Level: "[Placeholder Evidence Level]"
+  Crosslinking References:
+    - Title: "[Placeholder Title]"
+      Authors: "[Placeholder Authors]"
+      Journal: "[Placeholder Journal]"
+      Year: "[Placeholder Year]"
+      DOI: "[Placeholder DOI]"
+      Evidence Level: "[Placeholder Evidence Level]"
+  Printing References:
+    - Title: "[Placeholder Title]"
+      Authors: "[Placeholder Authors]"
+      Journal: "[Placeholder Journal]"
+      Year: "[Placeholder Year]"
+      DOI: "[Placeholder DOI]"
+      Evidence Level: "[Placeholder Evidence Level]"
+  Mechanical Property References:
+    - Title: "[Placeholder Title]"
+      Authors: "[Placeholder Authors]"
+      Journal: "[Placeholder Journal]"
+      Year: "[Placeholder Year]"
+      DOI: "[Placeholder DOI]"
+      Evidence Level: "[Placeholder Evidence Level]"
+  Biological Property References:
+    - Title: "[Placeholder Title]"
+      Authors: "[Placeholder Authors]"
+      Journal: "[Placeholder Journal]"
+      Year: "[Placeholder Year]"
+      DOI: "[Placeholder DOI]"
+      Evidence Level: "[Placeholder Evidence Level]"
+  Application References:
+    - Title: "[Placeholder Title]"
+      Authors: "[Placeholder Authors]"
+      Journal: "[Placeholder Journal]"
+      Year: "[Placeholder Year]"
+      DOI: "[Placeholder DOI]"
+      Evidence Level: "[Placeholder Evidence Level]"

@@ -1,0 +1,14 @@
+Tissue Name: Skin
+Preferred Biomaterials:
+  - Gelatin
+  - Collagen
+  - Fibrin
+Preferred Crosslinkers:
+  - Genipin
+  - Thrombin
+Required Mechanical Strength: Low to Moderate (10-100 kPa)
+Recommended Printing Method: Inkjet, Extrusion-based
+Recommended Viscosity: Low to Medium
+Recommended Nozzle Range: 27G - 30G
+Recommended Temperature: 37°C
+Scientific Notes: High cell viability and rapid vascularization are critical.

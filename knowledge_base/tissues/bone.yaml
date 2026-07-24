@@ -1,0 +1,13 @@
+Tissue Name: Bone
+Preferred Biomaterials:
+  - Alginate
+  - Pectin
+  - Hydroxyapatite
+Preferred Crosslinkers:
+  - CaCl₂
+Required Mechanical Strength: High (>1 MPa)
+Recommended Printing Method: Extrusion-based
+Recommended Viscosity: High
+Recommended Nozzle Range: 22G - 27G
+Recommended Temperature: 37°C
+Scientific Notes: High structural integrity is crucial for bone scaffolds.

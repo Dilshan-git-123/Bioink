@@ -8,37 +8,51 @@ def _load_yaml_file(path: str) -> Dict[str, Any]:
     with open(path, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f) or {}
 
-def load_biomaterials() -> Dict[str, Any]:
-    biomaterials_dir = os.path.join(KB_ROOT, 'biomaterials')
-    materials = {}
-    if not os.path.isdir(biomaterials_dir):
-        return materials
-    for fname in os.listdir(biomaterials_dir):
+def _load_directory(dir_name: str) -> Dict[str, Any]:
+    """Loads all YAML files from a given directory in the knowledge base."""
+    target_dir = os.path.join(KB_ROOT, dir_name)
+    data = {}
+    if not os.path.isdir(target_dir):
+        return data
+        
+    for fname in os.listdir(target_dir):
         if fname.lower().endswith('.yaml') or fname.lower().endswith('.yml'):
             key = os.path.splitext(fname)[0].lower()
-            materials[key] = _load_yaml_file(os.path.join(biomaterials_dir, fname))
-    return materials
+            data[key] = _load_yaml_file(os.path.join(target_dir, fname))
+            
+    return data
 
-def load_rules() -> Dict[str, Any]:
-    rules_dir = os.path.join(KB_ROOT, 'rules')
-    rules = {}
-    if not os.path.isdir(rules_dir):
-        return rules
-    for fname in os.listdir(rules_dir):
-        if fname.lower().endswith('.yaml') or fname.lower().endswith('.yml'):
-            rule_set = _load_yaml_file(os.path.join(rules_dir, fname))
-            if isinstance(rule_set, dict) and 'rules' in rule_set:
-                for rule in rule_set['rules']:
-                    rule_id = rule.get('rule_id')
-                    if rule_id:
-                        rules[rule_id] = rule
-    return rules
+class KnowledgeBaseLoader:
+    def __init__(self):
+        self.materials = {}
+        self.combinations = {}
+        self.tissues = {}
+        self.crosslinkers = {}
+        self.protocols = {}
+        self.reload()
 
-BIOMATERIALS_CACHE = load_biomaterials()
-RULES_CACHE = load_rules()
+    def reload(self):
+        """Reloads all knowledge base files dynamically from the folders."""
+        self.materials = _load_directory('materials')
+        self.combinations = _load_directory('combinations')
+        self.tissues = _load_directory('tissues')
+        self.crosslinkers = _load_directory('crosslinkers')
+        self.protocols = _load_directory('protocols')
+        
+    def get_material(self, name: str) -> Dict[str, Any]:
+        return self.materials.get(name.lower(), {})
+        
+    def get_combination(self, name: str) -> Dict[str, Any]:
+        return self.combinations.get(name.lower(), {})
+        
+    def get_tissue(self, name: str) -> Dict[str, Any]:
+        return self.tissues.get(name.lower(), {})
+        
+    def get_crosslinker(self, name: str) -> Dict[str, Any]:
+        return self.crosslinkers.get(name.lower(), {})
+        
+    def get_protocol(self, name: str) -> Dict[str, Any]:
+        return self.protocols.get(name.lower(), {})
 
-def get_material_profile(name: str) -> Dict[str, Any]:
-    return BIOMATERIALS_CACHE.get(name.lower(), {})
-
-def get_all_rules() -> Dict[str, Any]:
-    return RULES_CACHE
+# Singleton instance for easy importing across the application
+kb = KnowledgeBaseLoader()

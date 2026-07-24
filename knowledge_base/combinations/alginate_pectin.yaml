@@ -1,0 +1,16 @@
+Combination Name: Alginate + Pectin
+Materials:
+  - Alginate
+  - Pectin
+Recommended Ratios: 1:1 to 2:1 (Alginate:Pectin)
+Crosslinkers:
+  - CaCl₂
+Expected Printability: Moderate
+Expected Shape Fidelity: Moderate
+Expected Cell Viability: >85%
+Expected Mechanical Strength: Low to Moderate
+Advantages:
+  - Both crosslink with calcium, simplifying the printing process.
+Limitations:
+  - Lacks inherent cell-binding motifs.
+Scientific Notes: Pectin modifies the rheological profile of alginate, increasing viscosity before crosslinking.

@@ -45,7 +45,7 @@ const Login = () => {
               <h1 className="brand-title">
                 <span className="dna-icon">🧬</span> BioInkAI
               </h1>
-              <span className="brand-badge">SaaS Enterprise</span>
+              <span className="brand-badge">GT Enterprise</span>
             </div>
 
             <div className="hero-text-block">
@@ -85,7 +85,7 @@ const Login = () => {
                   <input
                     id="email"
                     type="email"
-                    placeholder="dr.smith@university.edu"
+                    placeholder="mail_id@gmail.com"
                     required
                   />
                 </div>

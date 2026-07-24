@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { ProjectProvider } from "./context/ProjectContext";
 import Initialize from "./pages/Initialize/Initialize";
 import Welcome from "./pages/Welcome/Welcome";
 import Login from "./pages/Login/Login";
@@ -13,11 +14,12 @@ import Literature from "./pages/Literature/Literature";
 import Experiments from "./pages/Experiments/Experiments";
 import Assistant from "./pages/Assistant/Assistant";
 import Settings from "./pages/Settings/Settings";
+import KnowledgeBase from "./pages/KnowledgeBase/KnowledgeBase";
 import "./styles/layout.css";
 
 function App() {
   return (
-    <>
+    <ProjectProvider>
       {/* Main application router */}
       <Router>
         <Routes>
@@ -40,6 +42,7 @@ function App() {
             <Route path="/literature" element={<Literature />} />
             <Route path="/experiments" element={<Experiments />} />
             <Route path="/assistant" element={<Assistant />} />
+            <Route path="/knowledge-base" element={<KnowledgeBase />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
 
@@ -47,7 +50,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
-    </>
+    </ProjectProvider>
   );
 }
 

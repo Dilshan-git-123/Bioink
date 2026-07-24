@@ -1,0 +1,65 @@
+{
+    "Migration Version": "2.0",
+    "Date": "2026-07-24T20:43:51.505347",
+    "Files Scanned": 4,
+    "Files Updated": 2,
+    "Files Skipped": 0,
+    "Backups Created": 2,
+    "Duration Seconds": 0.312886,
+    "Details": [
+        {
+            "file": "materials/alginate.yaml",
+            "status": "unchanged"
+        },
+        {
+            "file": "materials/collagen.yaml",
+            "status": "unchanged"
+        },
+        {
+            "file": "materials/gelatin.yaml",
+            "status": "updated",
+            "added_sections": [
+                "Knowledge Base Metadata",
+                "Material Information",
+                "Physical Properties",
+                "Chemical Properties",
+                "Safety Information",
+                "Preparation Parameters",
+                "Printing Properties",
+                "Crosslinking Information",
+                "Biological Properties",
+                "Mechanical Properties",
+                "Tissue Engineering Applications",
+                "Compatibility",
+                "AI Prediction Parameters",
+                "Optimization Guidelines",
+                "Scientific References"
+            ],
+            "added_fields": [],
+            "added_nested_fields": []
+        },
+        {
+            "file": "materials/pectin.yaml",
+            "status": "updated",
+            "added_sections": [
+                "Knowledge Base Metadata",
+                "Material Information",
+                "Physical Properties",
+                "Chemical Properties",
+                "Safety Information",
+                "Preparation Parameters",
+                "Printing Properties",
+                "Crosslinking Information",
+                "Biological Properties",
+                "Mechanical Properties",
+                "Tissue Engineering Applications",
+                "Compatibility",
+                "AI Prediction Parameters",
+                "Optimization Guidelines",
+                "Scientific References"
+            ],
+            "added_fields": [],
+            "added_nested_fields": []
+        }
+    ]
+}

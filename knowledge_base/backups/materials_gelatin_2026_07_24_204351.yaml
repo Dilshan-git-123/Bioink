@@ -1,0 +1,27 @@
+Material Name: Gelatin
+Description: A water-soluble protein derived from collagen.
+Preparation Temperature: 37-40°C
+Preparation Time: 1 hour
+Preparation RPM: 300
+Recommended Concentration: 5-15% w/v
+Compatible Materials:
+  - Alginate
+  - Hyaluronic Acid
+Compatible Crosslinkers:
+  - Genipin
+  - Transglutaminase
+Printing Methods:
+  - Extrusion-based
+  - Inkjet
+Suitable Tissues:
+  - Skin
+  - Cartilage
+Advantages:
+  - Contains cell-binding motifs (RGD)
+  - Good printability at lower temperatures
+Limitations:
+  - Thermoreversible gelation
+  - Rapid degradation
+Scientific Notes: Requires secondary crosslinking for long-term stability at 37°C.
+References:
+  - "Gelatin as a Bioink (2019)"

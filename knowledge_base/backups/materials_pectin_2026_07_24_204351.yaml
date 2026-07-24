@@ -1,0 +1,24 @@
+Material Name: Pectin
+Description: A structural heteropolysaccharide contained in the primary cell walls of terrestrial plants.
+Preparation Temperature: 60-80°C
+Preparation Time: 2 hours
+Preparation RPM: 800
+Recommended Concentration: 1-5% w/v
+Compatible Materials:
+  - Alginate
+  - Chitosan
+Compatible Crosslinkers:
+  - CaCl₂
+Printing Methods:
+  - Extrusion-based
+Suitable Tissues:
+  - Bone
+  - Cartilage
+Advantages:
+  - Tunable mechanical properties
+  - Readily available
+Limitations:
+  - Requires specific esterification degree for optimal gelation
+Scientific Notes: High-methoxyl pectin gels at low pH, low-methoxyl gels with calcium.
+References:
+  - "Pectin in 3D Bioprinting (2021)"

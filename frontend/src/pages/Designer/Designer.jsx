@@ -1,4 +1,3 @@
-
 import TissueSelector from "../../components/TissueSelector";
 import MaterialBuilder from "../../components/MaterialBuilder";
 import FinalMixing from "../../components/FinalMixing";
@@ -9,12 +8,14 @@ import { useState, useEffect } from "react";
 import PredictionEngine from "../../components/PredictionEngine";
 import OptimizationPanel from "../../components/OptimizationPanel";
 import { getTissueRecommendation } from "../../services/tissueApi";
+import { useProject } from "../../context/ProjectContext";
 
 import "../../styles/layout.css";
 
 import heroImage from "../../assets/bioink-hero.png";
 
 function Designer() {
+  const { activeProject, updateProject } = useProject();
   const [selectedTissue, setSelectedTissue] = useState("");
   const emptyMaterial = {
   biomaterial: "",
@@ -37,12 +38,67 @@ const [finalMixing, setFinalMixing] = useState({
 });
 
 const [prediction, setPrediction] = useState(null);
+const [protocol, setProtocol] = useState(null);
 
 const [loading, setLoading] = useState(false);
 
 const [error, setError] = useState("");
 
 const [tissueRecommendation, setTissueRecommendation] = useState(null);
+
+  // ── Sync state FROM active project when project changes (open / continue) ──
+  useEffect(() => {
+    if (!activeProject) return;
+    setSelectedTissue(activeProject.selectedTissue || "");
+    setMaterials(activeProject.materials?.length > 0 ? activeProject.materials : [{ biomaterial: "", concentration: "", temperature: "", rpm: "", time: "", method: "" }]);
+    setFinalMixing(activeProject.finalMixing || { temperature: "", time: "", rpm: "", crosslinking: "CaCl₂" });
+    setPrediction(activeProject.prediction || null);
+    setProtocol(activeProject.protocol || null);
+  // Run whenever the active project ID changes (new project OR continue old one)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProject?.projectId]);
+
+  // ── Sync tissue selection BACK to active project ─────────────────────────
+  useEffect(() => {
+    if (activeProject) {
+      updateProject(activeProject.projectId, { selectedTissue });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTissue]);
+
+  // ── Sync materials BACK to active project ────────────────────────────────
+  useEffect(() => {
+    if (activeProject) {
+      updateProject(activeProject.projectId, { materials });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [materials]);
+
+  // ── Sync prediction BACK to active project ───────────────────────────────
+  useEffect(() => {
+    if (activeProject) {
+      updateProject(activeProject.projectId, { prediction });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prediction]);
+
+  // ── Sync final mixing BACK to active project ─────────────────────────────
+  useEffect(() => {
+    if (activeProject) {
+      updateProject(activeProject.projectId, { finalMixing });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finalMixing]);
+
+  // ── Sync protocol BACK to active project ─────────────────────────────────
+  useEffect(() => {
+    if (activeProject) {
+      updateProject(activeProject.projectId, { protocol });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [protocol]);
+
+  // ── Tissue recommendation fetching (unchanged) ───────────────────────────
   useEffect(() => {
   if (!selectedTissue) {
     setTissueRecommendation(null);
@@ -72,6 +128,13 @@ const [tissueRecommendation, setTissueRecommendation] = useState(null);
             <div className="hero-left">
 
               <h1>🧬 BioInk Designer</h1>
+
+              {activeProject && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px', padding: '6px 14px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '13px', color: '#1E3A8A', fontWeight: 600 }}>📁 {activeProject.projectName}</span>
+                  <span style={{ fontSize: '12px', color: activeProject.status === 'Completed' ? '#166534' : '#2563EB', background: activeProject.status === 'Completed' ? '#DCFCE7' : '#DBEAFE', borderRadius: '20px', padding: '2px 8px', fontWeight: 500 }}>{activeProject.status}</span>
+                </div>
+              )}
 
               <p>
                 Create, optimize and validate bioinks using
@@ -161,6 +224,8 @@ const [tissueRecommendation, setTissueRecommendation] = useState(null);
     materials={materials}
     finalMixing={finalMixing}
     selectedTissue={selectedTissue}
+    protocol={protocol}
+    setProtocol={setProtocol}
 />
 
 <LiteraturePanel />

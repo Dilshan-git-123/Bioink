@@ -1,0 +1,17 @@
+Combination Name: Alginate + Gelatin
+Materials:
+  - Alginate
+  - Gelatin
+Recommended Ratios: 1:1 to 1:3 (Alginate:Gelatin)
+Crosslinkers:
+  - CaCl₂
+  - Genipin
+Expected Printability: High
+Expected Shape Fidelity: High
+Expected Cell Viability: >90%
+Expected Mechanical Strength: Moderate
+Advantages:
+  - Combines structural integrity of alginate with cell-adhesiveness of gelatin.
+Limitations:
+  - Requires a dual crosslinking strategy for optimal stability.
+Scientific Notes: The addition of gelatin significantly improves cell proliferation.

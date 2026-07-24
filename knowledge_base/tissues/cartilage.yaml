@@ -1,0 +1,14 @@
+Tissue Name: Cartilage
+Preferred Biomaterials:
+  - Alginate
+  - Gelatin
+  - Hyaluronic Acid
+Preferred Crosslinkers:
+  - CaCl₂
+  - Genipin
+Required Mechanical Strength: Moderate (100-500 kPa)
+Recommended Printing Method: Extrusion-based
+Recommended Viscosity: Medium to High
+Recommended Nozzle Range: 25G - 27G
+Recommended Temperature: 20-37°C
+Scientific Notes: Requires a balance between mechanical support and cellular proliferation.

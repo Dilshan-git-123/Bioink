@@ -1,0 +1,33 @@
+{
+    "Migration Version": "2.0",
+    "Date": "2026-07-24T20:21:26.691764",
+    "Files Scanned": 4,
+    "Files Updated": 0,
+    "Files Skipped": 2,
+    "Backups Created": 0,
+    "Duration Seconds": 0.083941,
+    "Details": [
+        {
+            "file": "materials/alginate.yaml",
+            "status": "unchanged"
+        },
+        {
+            "file": "materials/collagen.yaml",
+            "status": "unchanged"
+        },
+        {
+            "file": "materials/gelatin.yaml",
+            "status": "skipped",
+            "errors": [
+                "while parsing a block collection\n  in \"<unicode string>\", line 27, column 3:\n      - \"Gelatin as a Bioink\" (2019)\n      ^\nexpected <block end>, but found '<scalar>'\n  in \"<unicode string>\", line 27, column 27:\n      - \"Gelatin as a Bioink\" (2019)\n                              ^"
+            ]
+        },
+        {
+            "file": "materials/pectin.yaml",
+            "status": "skipped",
+            "errors": [
+                "while parsing a block collection\n  in \"<unicode string>\", line 24, column 3:\n      - \"Pectin in 3D Bioprinting\" (2021)\n      ^\nexpected <block end>, but found '<scalar>'\n  in \"<unicode string>\", line 24, column 32:\n      - \"Pectin in 3D Bioprinting\" (2021)\n                                   ^"
+            ]
+        }
+    ]
+}

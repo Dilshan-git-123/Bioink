@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+import os
+import re
+import datetime
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
@@ -10,6 +13,7 @@ from optimizer import optimize_bioink
 from tissue_engine import recommend_tissue
 from suggestion_engine import generate_suggestions
 from optimization_report import generate_optimization_report
+from migration_engine import run_migration_engine, preview_migration_engine, get_migration_logs, restore_backup, get_backups_list
 
 app = FastAPI(title="BioInkAI API")
 
@@ -266,3 +270,99 @@ def literature_recommendation(data: BioinkRequest):
     return {
         "papers": papers
     }
+
+# ------------------------------------------------
+# Material Generator
+# ------------------------------------------------
+
+class MaterialGenerateRequest(BaseModel):
+    materialName: str
+    scientificName: str
+    commonName: str
+    materialType: str
+    source: str
+    grade: str
+
+@app.post("/materials/generate")
+def generate_material(data: MaterialGenerateRequest):
+    # Validation
+    if not data.materialName.strip():
+        raise HTTPException(status_code=400, detail="Material name cannot be empty.")
+    
+    # Filename conversion
+    base_name = data.materialName.strip().lower()
+    safe_name = re.sub(r'[^a-z0-9\s-]', '', base_name)
+    safe_name = re.sub(r'[\s-]+', '_', safe_name)
+    
+    if not safe_name:
+        raise HTTPException(status_code=400, detail="Invalid material name.")
+        
+    filename = f"{safe_name}.yaml"
+    
+    kb_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'knowledge_base'))
+    template_path = os.path.join(kb_path, 'master', 'material_template.yaml')
+    output_path = os.path.join(kb_path, 'materials', filename)
+    
+    if os.path.exists(output_path):
+        raise HTTPException(status_code=400, detail="A material with this name already exists.")
+        
+    if not os.path.exists(template_path):
+        raise HTTPException(status_code=500, detail="Master template not found.")
+        
+    with open(template_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+        
+    # Replace placeholders
+    content = content.replace('"[Material Name]"', data.materialName.strip())
+    content = content.replace('"[Scientific Name]"', data.scientificName.strip())
+    content = content.replace('"[Common Name]"', data.commonName.strip() or data.materialName.strip())
+    content = content.replace('"[Material Type]"', data.materialType.strip())
+    content = content.replace('"[Source]"', data.source.strip())
+    content = content.replace('"[Grade]"', data.grade.strip() or "Standard")
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+        
+    try:
+        # Automatically open the generated YAML file using the OS default application
+        os.startfile(output_path)
+    except Exception as e:
+        print(f"Could not open file automatically: {e}")
+        
+    return {
+        "success": True,
+        "filename": filename,
+        "material_name": data.materialName.strip(),
+        "creation_time": datetime.datetime.now().isoformat()
+    }
+
+# ------------------------------------------------
+# Knowledge Base Migration Engine
+# ------------------------------------------------
+
+@app.get("/migration/preview")
+def preview_migration():
+    return preview_migration_engine()
+
+@app.post("/migration/run")
+def run_migration():
+    return run_migration_engine()
+
+@app.get("/migration/logs")
+def migration_logs():
+    return get_migration_logs()
+
+@app.get("/migration/backups")
+def migration_backups():
+    return get_backups_list()
+
+class RestoreRequest(BaseModel):
+    backup_filename: str
+
+@app.post("/migration/restore")
+def restore_migration(data: RestoreRequest):
+    result = restore_backup(data.backup_filename)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result

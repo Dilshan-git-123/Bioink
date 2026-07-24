@@ -1,0 +1,16 @@
+Name: CaCl₂
+Works With:
+  - Alginate
+  - Pectin
+Does Not Crosslink:
+  - Gelatin
+  - Collagen
+Typical Concentration: 50-100 mM
+Mechanism: Ionic crosslinking via divalent cations.
+Advantages:
+  - Very fast gelation
+  - Low toxicity at optimal concentrations
+Limitations:
+  - Can leach out over time, reducing structural stability.
+References:
+  - "Calcium Chloride Crosslinking in Bioprinting" (2018)
