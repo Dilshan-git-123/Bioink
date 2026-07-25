@@ -11,7 +11,8 @@ import {
     FaRobot,
     FaCog,
     FaSignOutAlt,
-    FaBook
+    FaBook,
+    FaFolderOpen
 } from "react-icons/fa";
 
 function Sidebar() {
@@ -31,10 +32,17 @@ function Sidebar() {
         },
 
         {
+            icon: <FaFolderOpen />,
+            title: "Projects",
+            path: "/projects"
+        },
+
+        {
             icon: <FaFlask />,
             title: "Designer",
             path: "/designer"
         },
+
 
         {
             icon: <FaChartLine />,

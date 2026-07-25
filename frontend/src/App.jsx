@@ -15,6 +15,7 @@ import Experiments from "./pages/Experiments/Experiments";
 import Assistant from "./pages/Assistant/Assistant";
 import Settings from "./pages/Settings/Settings";
 import KnowledgeBase from "./pages/KnowledgeBase/KnowledgeBase";
+import Projects from "./pages/Projects/Projects";
 import "./styles/layout.css";
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
           {/* Protected Routes - wrapped in MainLayout with Sidebar + Header */}
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
             <Route path="/designer" element={<Designer />} />
             <Route path="/predictions" element={<Predictions />} />
             <Route path="/database" element={<Database />} />

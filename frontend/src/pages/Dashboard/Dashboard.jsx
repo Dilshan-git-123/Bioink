@@ -11,6 +11,7 @@ import {
     FaCheckCircle,
     FaExclamationCircle
 } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 // Reusable components within the Dashboard
@@ -46,6 +47,7 @@ const ActivityItem = ({ message, time, icon, type }) => (
 );
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     return (
         <div className="dashboard-page">
             
@@ -56,9 +58,9 @@ const Dashboard = () => {
                     <p>Here is what's happening with your bioink designs today.</p>
                 </div>
                 <div className="dashboard-actions">
-                    <button className="primary-btn"><FaPlus className="btn-icon"/> New Project</button>
-                    <button className="secondary-btn"><FaFlask className="btn-icon"/> Quick Formulate</button>
-                    <button className="secondary-btn"><FaChartLine className="btn-icon"/> Run Predictions</button>
+                    <button className="primary-btn" onClick={() => navigate('/projects')}><FaPlus className="btn-icon"/> New Project</button>
+                    <button className="secondary-btn" onClick={() => navigate('/designer')}><FaFlask className="btn-icon"/> Quick Formulate</button>
+                    <button className="secondary-btn" onClick={() => navigate('/predictions')}><FaChartLine className="btn-icon"/> Run Predictions</button>
                 </div>
             </div>
 

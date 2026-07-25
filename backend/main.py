@@ -1,10 +1,11 @@
 import os
 import re
 import datetime
+import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict, Any, Optional
 
 from predictor import predict_bioink
 from validator import validate_bioink
@@ -14,8 +15,21 @@ from tissue_engine import recommend_tissue
 from suggestion_engine import generate_suggestions
 from optimization_report import generate_optimization_report
 from migration_engine import run_migration_engine, preview_migration_engine, get_migration_logs, restore_backup, get_backups_list
+from database import (
+    init_db,
+    db_create_project,
+    db_get_projects,
+    db_get_project_by_id,
+    db_update_project,
+    db_delete_project
+)
+
 
 app = FastAPI(title="BioInkAI API")
+
+@app.on_event("startup")
+def startup_event():
+    init_db()
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,6 +66,43 @@ class BioinkRequest(BaseModel):
     tissue: str
     materials: List[Material]
     finalMixing: FinalMixing
+
+
+class ProjectResponse(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = ""
+    tissue_type: Optional[str] = ""
+    biomaterial_formulation: Optional[List[dict]] = []
+    final_mixing_parameters: Optional[dict] = {}
+    prediction_results: Optional[dict] = {}
+    generated_protocol: Optional[dict] = {}
+    created_date: str
+    last_modified_date: str
+    status: str
+
+
+class ProjectCreate(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    tissue_type: Optional[str] = ""
+    biomaterial_formulation: Optional[List[dict]] = []
+    final_mixing_parameters: Optional[dict] = {}
+    prediction_results: Optional[dict] = {}
+    generated_protocol: Optional[dict] = {}
+    status: Optional[str] = "Draft"
+
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    tissue_type: Optional[str] = None
+    biomaterial_formulation: Optional[List[dict]] = None
+    final_mixing_parameters: Optional[dict] = None
+    prediction_results: Optional[dict] = None
+    generated_protocol: Optional[dict] = None
+    status: Optional[str] = None
+
 
 
 # ------------------------------------------------
@@ -270,6 +321,70 @@ def literature_recommendation(data: BioinkRequest):
     return {
         "papers": papers
     }
+
+
+# ------------------------------------------------
+# Project Management
+# ------------------------------------------------
+
+@app.post("/projects", response_model=ProjectResponse)
+def create_project(data: ProjectCreate):
+    project_id = str(uuid.uuid4())
+    now = datetime.datetime.utcnow().isoformat()
+    project = {
+        "id": project_id,
+        "name": data.name,
+        "description": data.description or "",
+        "tissue_type": data.tissue_type or "",
+        "biomaterial_formulation": data.biomaterial_formulation or [],
+        "final_mixing_parameters": data.final_mixing_parameters or {},
+        "prediction_results": data.prediction_results or {},
+        "generated_protocol": data.generated_protocol or {},
+        "created_date": now,
+        "last_modified_date": now,
+        "status": data.status or "Draft"
+    }
+    created = db_create_project(project)
+    return created
+
+
+@app.get("/projects", response_model=List[ProjectResponse])
+def get_projects():
+    return db_get_projects()
+
+
+@app.get("/projects/{project_id}", response_model=ProjectResponse)
+def get_project(project_id: str):
+    project = db_get_project_by_id(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
+
+@app.put("/projects/{project_id}", response_model=ProjectResponse)
+def update_project_endpoint(project_id: str, data: ProjectUpdate):
+    project = db_get_project_by_id(project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Filter out None updates
+    updates = {}
+    for key, val in data.model_dump(exclude_unset=True).items():
+        if val is not None:
+            updates[key] = val
+            
+    updates["last_modified_date"] = datetime.datetime.utcnow().isoformat()
+    updated = db_update_project(project_id, updates)
+    return updated
+
+
+@app.delete("/projects/{project_id}")
+def delete_project_endpoint(project_id: str):
+    deleted = db_delete_project(project_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"success": True}
+
 
 # ------------------------------------------------
 # Material Generator

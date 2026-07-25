@@ -5,6 +5,7 @@ import PredictionDashboard from "../../components/PredictionDashboard";
 import ProtocolGenerator from "../../components/ProtocolGenerator";
 import LiteraturePanel from "../../components/LiteraturePanel";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import PredictionEngine from "../../components/PredictionEngine";
 import OptimizationPanel from "../../components/OptimizationPanel";
 import { getTissueRecommendation } from "../../services/tissueApi";
@@ -15,7 +16,19 @@ import "../../styles/layout.css";
 import heroImage from "../../assets/bioink-hero.png";
 
 function Designer() {
-  const { activeProject, updateProject } = useProject();
+  const navigate = useNavigate();
+  const { activeProject, updateProject, saveActiveProject, isSaving, lastSaved } = useProject();
+
+  const handleManualSave = async () => {
+    if (activeProject) {
+      try {
+        await saveActiveProject(activeProject.projectId);
+      } catch (err) {
+        console.error("Manual save failed:", err);
+      }
+    }
+  };
+
   const [selectedTissue, setSelectedTissue] = useState("");
   const emptyMaterial = {
   biomaterial: "",
@@ -130,9 +143,33 @@ const [tissueRecommendation, setTissueRecommendation] = useState(null);
               <h1>🧬 BioInk Designer</h1>
 
               {activeProject && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px', padding: '6px 14px', marginBottom: '12px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '8px', padding: '6px 14px', marginBottom: '12px' }}>
                   <span style={{ fontSize: '13px', color: '#1E3A8A', fontWeight: 600 }}>📁 {activeProject.projectName}</span>
                   <span style={{ fontSize: '12px', color: activeProject.status === 'Completed' ? '#166534' : '#2563EB', background: activeProject.status === 'Completed' ? '#DCFCE7' : '#DBEAFE', borderRadius: '20px', padding: '2px 8px', fontWeight: 500 }}>{activeProject.status}</span>
+                  
+                  <button 
+                    onClick={handleManualSave}
+                    disabled={isSaving}
+                    style={{ 
+                      fontSize: '11px', 
+                      color: 'white', 
+                      background: '#0F4C81', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      padding: '4px 10px', 
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      opacity: isSaving ? 0.7 : 1,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    {isSaving ? "Saving..." : "Save Project"}
+                  </button>
+                  {lastSaved && (
+                    <span style={{ fontSize: '11px', color: '#667085' }}>Last saved: {lastSaved}</span>
+                  )}
                 </div>
               )}
 
@@ -144,7 +181,7 @@ const [tissueRecommendation, setTissueRecommendation] = useState(null);
 
               <div className="hero-buttons">
 
-                <button className="primary-btn">
+                <button className="primary-btn" onClick={() => navigate('/projects')}>
                   + New Project
                 </button>
 
