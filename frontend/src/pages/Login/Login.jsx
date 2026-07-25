@@ -10,6 +10,7 @@ import loginHero from '../../assets/images/login-hero.png';
 const Login = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
@@ -18,7 +19,11 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    navigate('/initialize');
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigate('/initialize');
+    }, 1000);
   };
 
   return (
@@ -124,10 +129,12 @@ const Login = () => {
               <motion.button
                 type="submit"
                 className="submit-btn"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                disabled={loading}
+                whileHover={!loading ? { scale: 1.02 } : {}}
+                whileTap={!loading ? { scale: 0.98 } : {}}
+                style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
               >
-                Sign In <FaArrowRight className="btn-arrow" />
+                {loading ? 'Authenticating...' : <><span style={{display: 'inline-flex', alignItems: 'center', gap: '8px'}}>Sign In <FaArrowRight className="btn-arrow" /></span></>}
               </motion.button>
             </form>
 

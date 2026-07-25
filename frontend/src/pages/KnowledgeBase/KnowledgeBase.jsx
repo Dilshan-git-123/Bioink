@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { parseError } from "../../utils/errorHandler";
 import { 
     FaPlusCircle, 
     FaSpinner, 
@@ -100,8 +101,8 @@ const KnowledgeBase = () => {
 
             setGenNotification({ type: 'success', message: `✅ Material created successfully: ${data.filename}` });
             setFormData({ materialName: '', scientificName: '', commonName: '', materialType: '', source: '', grade: '' });
-        } catch (error) {
-            setGenNotification({ type: 'error', message: error.message });
+        } catch (err) {
+            setGenNotification({ type: 'error', message: parseError(err, "Failed to generate material.") });
         } finally {
             setGenLoading(false);
         }
@@ -118,7 +119,7 @@ const KnowledgeBase = () => {
             if (!res.ok) throw new Error(data.detail || 'Failed to fetch preview.');
             setPreviewData(data.preview);
         } catch (err) {
-            setMaintenanceNotification({ type: 'error', message: err.message });
+            setMaintenanceNotification({ type: 'error', message: parseError(err, "Failed to fetch preview.") });
         } finally {
             setMaintenanceLoading(false);
         }
@@ -138,7 +139,7 @@ const KnowledgeBase = () => {
             fetchLogs();
             fetchBackups();
         } catch (err) {
-            setMaintenanceNotification({ type: 'error', message: err.message });
+            setMaintenanceNotification({ type: 'error', message: parseError(err, "Migration failed.") });
         } finally {
             setMaintenanceLoading(false);
         }
@@ -158,7 +159,7 @@ const KnowledgeBase = () => {
             if (!res.ok) throw new Error(data.detail || 'Restore failed.');
             setMaintenanceNotification({ type: 'success', message: `Successfully restored backup into ${data.restored_file}` });
         } catch (err) {
-            setMaintenanceNotification({ type: 'error', message: err.message });
+            setMaintenanceNotification({ type: 'error', message: parseError(err, "Restore failed.") });
         } finally {
             setMaintenanceLoading(false);
         }
@@ -207,7 +208,7 @@ const KnowledgeBase = () => {
                                         type="text" 
                                         className="form-input" 
                                         name="materialName"
-                                        value={formData.materialName}
+                                        value={formData?.materialName || ""}
                                         onChange={handleGenChange}
                                         placeholder="e.g. Silk Fibroin"
                                         required
@@ -221,7 +222,7 @@ const KnowledgeBase = () => {
                                             type="text" 
                                             className="form-input" 
                                             name="scientificName"
-                                            value={formData.scientificName}
+                                            value={formData?.scientificName || ""}
                                             onChange={handleGenChange}
                                             placeholder="e.g. Bombyx mori silk fibroin"
                                             required
@@ -233,7 +234,7 @@ const KnowledgeBase = () => {
                                             type="text" 
                                             className="form-input" 
                                             name="commonName"
-                                            value={formData.commonName}
+                                            value={formData?.commonName || ""}
                                             onChange={handleGenChange}
                                             placeholder="e.g. SF"
                                         />
@@ -246,7 +247,7 @@ const KnowledgeBase = () => {
                                         <select 
                                             className="form-input"
                                             name="materialType"
-                                            value={formData.materialType}
+                                            value={formData?.materialType || ""}
                                             onChange={handleGenChange}
                                             required
                                         >
@@ -263,7 +264,7 @@ const KnowledgeBase = () => {
                                             type="text" 
                                             className="form-input" 
                                             name="source"
-                                            value={formData.source}
+                                            value={formData?.source || ""}
                                             onChange={handleGenChange}
                                             placeholder="e.g. Silkworm cocoons"
                                             required
@@ -277,18 +278,20 @@ const KnowledgeBase = () => {
                                         type="text" 
                                         className="form-input" 
                                         name="grade"
-                                        value={formData.grade}
+                                        value={formData?.grade || ""}
                                         onChange={handleGenChange}
                                         placeholder="e.g. Research Grade"
                                     />
                                 </div>
 
-                                <button type="submit" className="btn-generate" disabled={genLoading}>
-                                    {genLoading ? (
-                                        <><FaSpinner className="fa-spin" /> Generating Material...</>
-                                    ) : (
-                                        "Generate Material"
-                                    )}
+                                <button 
+                                    type="submit" 
+                                    className="gen-btn"
+                                    disabled={genLoading}
+                                    style={{ opacity: genLoading ? 0.7 : 1, cursor: genLoading ? 'not-allowed' : 'pointer' }}
+                                >
+                                    <FaTools style={{ marginRight: '8px' }} />
+                                    {genLoading ? "Generating..." : "Generate Material"}
                                 </button>
                             </form>
                         </div>
@@ -353,11 +356,12 @@ const KnowledgeBase = () => {
                                                 <FaEye /> Preview Changes
                                             </button>
                                             <button 
-                                                className="btn-primary" 
-                                                onClick={handleMigrate}
+                                                className="primary-btn" 
+                                                onClick={handleMigrate} 
                                                 disabled={maintenanceLoading}
+                                                style={{ opacity: maintenanceLoading ? 0.7 : 1, cursor: maintenanceLoading ? 'not-allowed' : 'pointer' }}
                                             >
-                                                <FaPlay /> Run Migration
+                                                {maintenanceLoading ? "Processing..." : "Run Migration Engine"}
                                             </button>
                                         </div>
 
@@ -451,7 +455,7 @@ const KnowledgeBase = () => {
                                                 <>
                                                     <select 
                                                         className="form-input" 
-                                                        value={selectedBackup}
+                                                        value={selectedBackup || ""}
                                                         onChange={(e) => setSelectedBackup(e.target.value)}
                                                     >
                                                         {backups.map((b, idx) => (
@@ -462,8 +466,9 @@ const KnowledgeBase = () => {
                                                         className="btn-primary w-100 mt-3"
                                                         onClick={handleRestore}
                                                         disabled={maintenanceLoading || !selectedBackup}
+                                                        style={{ opacity: (maintenanceLoading || !selectedBackup) ? 0.7 : 1, cursor: (maintenanceLoading || !selectedBackup) ? 'not-allowed' : 'pointer' }}
                                                     >
-                                                        <FaUndo /> Restore Selected Backup
+                                                        <FaUndo /> {maintenanceLoading ? "Processing..." : "Restore Selected Backup"}
                                                     </button>
                                                 </>
                                             )}

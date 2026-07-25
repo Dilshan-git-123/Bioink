@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { runOptimization } from "../services/optimizationApi";
+import { parseError } from "../utils/errorHandler";
 
 function OptimizationPanel({
 
@@ -14,10 +15,13 @@ function OptimizationPanel({
     const [result, setResult] = useState(null);
 
     const [loading, setLoading] = useState(false);
+    
+    const [validationError, setValidationError] = useState("");
 
     const optimize = async () => {
 
         setLoading(true);
+        setValidationError("");
 
         const payload = {
 
@@ -39,7 +43,11 @@ function OptimizationPanel({
 
         catch (err) {
 
-            alert("Optimization failed.");
+            if (err.validationErrors) {
+                setValidationError(err.validationErrors.join("\n"));
+            } else {
+                setValidationError(parseError(err, "Optimization failed. Please check your network and try again."));
+            }
 
         }
 
@@ -62,13 +70,21 @@ function OptimizationPanel({
                 <button
                     className="predict-btn"
                     onClick={optimize}
+                    disabled={loading}
+                    style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
                 >
 
-                    Optimize Formulation
+                    {loading ? "Optimizing bioink..." : "Optimize Formulation"}
 
                 </button>
 
             </div>
+            
+            {validationError && (
+                <div className="error-message" style={{ color: "red", whiteSpace: "pre-wrap", marginBottom: "15px" }}>
+                    {validationError}
+                </div>
+            )}
 
             {loading && <p>Analyzing formulation...</p>}
 

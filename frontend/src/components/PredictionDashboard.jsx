@@ -23,8 +23,6 @@ function PredictionDashboard({
   error
 }) {
 
-  console.log("Dashboard prediction:", prediction);
-
   if (loading) {
     return (
       <div className="prediction-dashboard" style={{ background: '#f8fafc', padding: '40px', borderRadius: '16px', textAlign: 'center' }}>

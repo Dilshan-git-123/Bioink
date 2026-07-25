@@ -15,7 +15,7 @@ import Experiments from "./pages/Experiments/Experiments";
 import Assistant from "./pages/Assistant/Assistant";
 import Settings from "./pages/Settings/Settings";
 import KnowledgeBase from "./pages/KnowledgeBase/KnowledgeBase";
-import Projects from "./pages/Projects/Projects";
+import Projects from "./pages/Projects/Projects.jsx";
 import "./styles/layout.css";
 
 function App() {

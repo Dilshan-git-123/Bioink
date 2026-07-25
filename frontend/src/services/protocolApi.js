@@ -2,8 +2,6 @@ const API_URL = "http://127.0.0.1:8000";
 
 export const generateProtocol = async (payload) => {
 
-  console.log("Sending Protocol Payload:", payload);
-
   const response = await fetch(`${API_URL}/protocol`, {
     method: "POST",
     headers: {

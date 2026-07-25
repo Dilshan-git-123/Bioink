@@ -4,12 +4,13 @@ import FinalMixing from "../../components/FinalMixing";
 import PredictionDashboard from "../../components/PredictionDashboard";
 import ProtocolGenerator from "../../components/ProtocolGenerator";
 import LiteraturePanel from "../../components/LiteraturePanel";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PredictionEngine from "../../components/PredictionEngine";
 import OptimizationPanel from "../../components/OptimizationPanel";
 import { getTissueRecommendation } from "../../services/tissueApi";
 import { useProject } from "../../context/ProjectContext";
+import { createExperiment } from "../../services/experimentService";
 
 import "../../styles/layout.css";
 
@@ -110,6 +111,32 @@ const [tissueRecommendation, setTissueRecommendation] = useState(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [protocol]);
+
+  // ── Auto-record experiment when prediction completes ────────────────────
+  const prevPredictionRef = useRef(null);
+  useEffect(() => {
+    if (!prediction || prediction === prevPredictionRef.current) return;
+    prevPredictionRef.current = prediction;
+    if (!activeProject) return;
+
+    const expPayload = {
+      project_id:           activeProject.projectId || 'unknown',
+      project_name:         activeProject.projectName || 'Unnamed Project',
+      tissue_type:          selectedTissue || null,
+      biomaterials:         materials,
+      final_mixing:         finalMixing,
+      prediction_results:   prediction,
+      compatibility_analysis: prediction?.compatibilityAnalysis || null,
+      generated_protocol:   protocol ? JSON.stringify(protocol) : null,
+      user_notes:           null,
+      is_favorite:          false,
+    };
+
+    createExperiment(expPayload)
+      .then(() => console.info('[BioInkAI] Experiment auto-recorded.'))
+      .catch(err => console.warn('[BioInkAI] Could not record experiment:', err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prediction]);
 
   // ── Tissue recommendation fetching (unchanged) ───────────────────────────
   useEffect(() => {

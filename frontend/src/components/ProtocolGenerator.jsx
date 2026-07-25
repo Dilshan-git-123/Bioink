@@ -2,6 +2,7 @@ import { useState } from "react";
 import "../styles/protocolGenerator.css";
 import { generateProtocol } from "../services/protocolApi";
 import { downloadProtocolPDF } from "../utils/pdfGenerator";
+import { parseError } from "../utils/errorHandler";
 
 function ProtocolGenerator({ materials, finalMixing, selectedTissue, protocol, setProtocol }) {
     const [loading, setLoading] = useState(false);
@@ -10,6 +11,19 @@ function ProtocolGenerator({ materials, finalMixing, selectedTissue, protocol, s
     const handleGenerate = async () => {
         setLoading(true);
         setError("");
+
+        if (!selectedTissue) {
+            setError("Please select a target tissue.");
+            setLoading(false);
+            return;
+        }
+
+        if (!materials || materials.length === 0) {
+            setError("Please add at least one biomaterial.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const payload = {
                 tissue: selectedTissue || "General",
@@ -29,23 +43,10 @@ function ProtocolGenerator({ materials, finalMixing, selectedTissue, protocol, s
                 }
             };
 
-            console.log("Protocol Payload:", payload);
-
             const data = await generateProtocol(payload);
             setProtocol(data);
         } catch (err) {
-            if (err.detail && Array.isArray(err.detail)) {
-                // Format FastAPI validation errors
-                const errorMessages = err.detail.map(e => {
-                    const locPath = e.loc.filter(l => l !== 'body').join('.');
-                    return `Missing/Invalid field: ${locPath} (${e.msg})`;
-                });
-                setError(`422 Validation Error:\n${errorMessages.join('\n')}`);
-            } else if (err.message) {
-                setError(err.message);
-            } else {
-                setError("Failed to fetch protocol from the server.");
-            }
+            setError(parseError(err, "Failed to generate protocol. Please try again."));
         } finally {
             setLoading(false);
         }
@@ -126,7 +127,7 @@ ${protocol.status}
                             opacity: loading ? 0.7 : 1
                         }}
                     >
-                        {loading ? "Generating..." : "Generate Protocol"}
+                        {loading ? "Generating protocol..." : "Generate Protocol"}
                     </button>
                     <button
     onClick={() =>
@@ -156,20 +157,20 @@ ${protocol.status}
                         <h1 style={{ color: '#0F4C81', margin: '0 0 10px 0', fontSize: '22px' }}>{protocol.title}</h1>
                         <p style={{ margin: '0 0 10px 0', color: '#475569', fontSize: '15px' }}><strong>Objective:</strong> {protocol.objective}</p>
                         <p style={{ margin: 0, fontSize: '15px' }}>
-                            <strong>Status:</strong> <span style={{ color: protocol.status.includes('Ready') ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>{protocol.status}</span>
+                            <strong>Status:</strong> <span style={{ color: protocol.status?.includes('Ready') ? '#10b981' : '#f59e0b', fontWeight: 'bold' }}>{protocol.status}</span>
                         </p>
                     </div>
 
                     <h3 style={{ color: '#334155', borderBottom: '1px solid #e2e8f0', paddingBottom: '5px' }}>Required Materials</h3>
                     <ul style={{ color: '#475569', marginBottom: '25px', paddingLeft: '20px' }}>
-                        {protocol.required_materials.map((mat, i) => (
+                        {(protocol.required_materials || []).map((mat, i) => (
                             <li key={i} style={{ marginBottom: '5px' }}>{mat}</li>
                         ))}
                     </ul>
 
                     <h3 style={{ color: '#334155', borderBottom: '1px solid #e2e8f0', paddingBottom: '5px' }}>Laboratory Steps</h3>
                     <div className="steps-container" style={{ marginBottom: '25px' }}>
-                        {protocol.steps.map((step, i) => (
+                        {(protocol.steps || []).map((step, i) => (
                             <div key={i} className="step" style={{ marginBottom: '12px', padding: '12px 16px', background: '#f8fafc', borderLeft: '4px solid #0F4C81', borderRadius: '4px', color: '#334155' }}>
                                 <strong style={{ color: '#0F4C81', marginRight: '8px' }}>Step {i + 1}:</strong> {step}
                             </div>
@@ -181,7 +182,7 @@ ${protocol.status}
 
                     <h3 style={{ color: '#b91c1c', borderBottom: '1px solid #fecaca', paddingBottom: '5px' }}>Safety Notes</h3>
                     <ul style={{ color: '#991b1b', margin: 0, paddingLeft: '20px' }}>
-                        {protocol.safety.map((note, i) => (
+                        {(protocol.safety || []).map((note, i) => (
                             <li key={i} style={{ marginBottom: '5px', lineHeight: '1.5' }}>{note}</li>
                         ))}
                     </ul>

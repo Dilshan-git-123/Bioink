@@ -94,7 +94,7 @@ const Assistant = () => {
                         <input 
                             type="text" 
                             placeholder="Ask BioInkAI a question about your research..." 
-                            value={input}
+                            value={input || ""}
                             onChange={(e) => setInput(e.target.value)}
                         />
                         <button className="send-btn"><FaPaperPlane /></button>

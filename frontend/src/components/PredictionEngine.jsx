@@ -1,5 +1,6 @@
 import "../styles/materialBuilder.css";
 import { runPrediction } from "../services/api";
+import { parseError } from "../utils/errorHandler";
 
 function PredictionEngine({
   selectedTissue,
@@ -16,6 +17,25 @@ function PredictionEngine({
 
       setLoading(true);
       setError("");
+
+      if (!selectedTissue) {
+        throw new Error("Please select a target tissue.");
+      }
+
+      if (!materials || materials.length === 0) {
+        throw new Error("Please add at least one biomaterial.");
+      }
+
+      for (let i = 0; i < materials.length; i++) {
+        const mat = materials[i];
+        if (!mat.biomaterial || !mat.concentration || !mat.temperature || !mat.rpm || !mat.time || !mat.method) {
+            throw new Error(`Please complete all fields for Material ${i + 1}.`);
+        }
+      }
+
+      if (!finalMixing?.temperature || !finalMixing?.rpm || !finalMixing?.time || !finalMixing?.crosslinking) {
+          throw new Error("Please complete all Final Mixing parameters.");
+      }
 
       const payload = {
 
@@ -51,11 +71,7 @@ function PredictionEngine({
 
       };
 
-      console.log(JSON.stringify(payload, null, 2));
-
       const result = await runPrediction(payload);
-
-      console.log("Prediction:", result);
 
       setPrediction(result);
 
@@ -63,9 +79,7 @@ function PredictionEngine({
 
     catch (err) {
 
-      console.error(err);
-
-      setError("Prediction failed.");
+      setError(parseError(err, "Analysis failed. Please try again."));
 
     }
 
@@ -93,8 +107,10 @@ function PredictionEngine({
         <button
           className="predict-btn"
           onClick={handlePrediction}
+          disabled={loading}
+          style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
         >
-          ▶ Run AI Analysis
+          {loading ? "Predicting formulation..." : "▶ Run AI Analysis"}
         </button>
 
       </div>

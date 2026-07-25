@@ -32,18 +32,6 @@ function MaterialBuilder({
 
   };
 
-  const predictBioink = () => {
-
-  console.clear();
-
-  console.log("========== BIOINK INPUT ==========");
-
-  console.table(materials);
-
-  console.log("==================================");
-
-};
-
   return (
 
     <div className="material-builder">
@@ -115,7 +103,7 @@ function MaterialBuilder({
                 <label>Biomaterial</label>
 
                 <select
-                  value={material.biomaterial}
+                  value={material.biomaterial || ""}
                   onChange={(e)=>
                     updateMaterial(
                       index,
@@ -149,7 +137,7 @@ function MaterialBuilder({
 
                 <input
                   type="number"
-                  value={material.concentration}
+                  value={material.concentration ?? ""}
                   onChange={(e)=>
                     updateMaterial(
                       index,
@@ -167,7 +155,7 @@ function MaterialBuilder({
 
                 <input
                   type="number"
-                  value={material.temperature}
+                  value={material.temperature ?? ""}
                   onChange={(e)=>
                     updateMaterial(
                       index,
@@ -185,7 +173,7 @@ function MaterialBuilder({
 
                 <input
                   type="number"
-                  value={material.rpm}
+                  value={material.rpm ?? ""}
                   onChange={(e)=>
                     updateMaterial(
                       index,
@@ -203,7 +191,7 @@ function MaterialBuilder({
 
                 <input
                   type="number"
-                  value={material.time}
+                  value={material.time ?? ""}
                   onChange={(e)=>
                     updateMaterial(
                       index,
@@ -220,7 +208,7 @@ function MaterialBuilder({
                 <label>Mixing Method</label>
 
                 <select
-                  value={material.method}
+                  value={material.method || ""}
                   onChange={(e)=>
                     updateMaterial(
                       index,

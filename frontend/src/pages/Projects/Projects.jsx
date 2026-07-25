@@ -40,6 +40,7 @@ function Projects() {
   const [projectDescription, setProjectDescription] = useState("");
   const [nameError, setNameError] = useState("");
   const [nameSuggestions, setNameSuggestions] = useState([]);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Create Project modal handlers
   const handleOpenModal = () => {
@@ -67,22 +68,27 @@ function Projects() {
   };
 
   const handleSubmitProject = async () => {
-    const trimmed = projectName.trim();
-    if (!trimmed) {
+    const trimmed = projectName || "";
+    if (!trimmed.trim()) {
       setNameError("Project name is required.");
       setNameSuggestions([]);
       return;
     }
 
-    if (isDuplicateName(trimmed)) {
-      setNameError(`A project named "${trimmed}" already exists.`);
-      setNameSuggestions(getSuggestions(trimmed));
+    if (isDuplicateName(trimmed.trim())) {
+      setNameError(`A project named "${trimmed.trim()}" already exists.`);
+      setNameSuggestions(getSuggestions(trimmed.trim()));
       return;
     }
 
-    await createProject(trimmed, projectDescription.trim());
-    setIsModalOpen(false);
-    navigate("/designer");
+    setIsCreating(true);
+    try {
+      await createProject(trimmed.trim(), projectDescription || "");
+      setIsModalOpen(false);
+      navigate("/designer");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   // Action Handlers
@@ -156,7 +162,7 @@ function Projects() {
             type="text"
             className="search-input-projects"
             placeholder="Search projects by name, tissue, description..."
-            value={searchQuery}
+            value={searchQuery || ""}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
@@ -165,7 +171,7 @@ function Projects() {
           {/* Status Filter */}
           <div className="filter-select-wrapper">
             <select
-              value={statusFilter}
+              value={statusFilter || ""}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="control-select"
             >
@@ -179,7 +185,7 @@ function Projects() {
           {/* Sort Control */}
           <div className="filter-select-wrapper">
             <select
-              value={sortBy}
+              value={sortBy || ""}
               onChange={(e) => setSortBy(e.target.value)}
               className="control-select"
             >
@@ -309,7 +315,7 @@ function Projects() {
               type="text"
               className={`form-input ${nameError ? "input-error" : ""}`}
               placeholder="e.g. Collagen Skin Scaffold"
-              value={projectName}
+              value={projectName || ""}
               onChange={handleNameChange}
               onKeyDown={(e) => e.key === "Enter" && handleSubmitProject()}
               autoFocus
@@ -348,7 +354,7 @@ function Projects() {
               id="project-description"
               className="form-textarea"
               placeholder="Briefly describe the research goals..."
-              value={projectDescription}
+              value={projectDescription || ""}
               onChange={(e) => setProjectDescription(e.target.value)}
               rows={3}
               maxLength={500}
@@ -356,11 +362,16 @@ function Projects() {
           </div>
 
           <div className="form-actions">
-            <button className="btn-cancel" onClick={handleCloseModal}>
+            <button className="btn-cancel" onClick={handleCloseModal} disabled={isCreating}>
               Cancel
             </button>
-            <button className="btn-create" onClick={handleSubmitProject}>
-              Create Project
+            <button 
+                className="btn-create" 
+                onClick={handleSubmitProject} 
+                disabled={isCreating}
+                style={{ opacity: isCreating ? 0.7 : 1, cursor: isCreating ? 'not-allowed' : 'pointer' }}
+            >
+              {isCreating ? "Creating Project..." : "Create Project"}
             </button>
           </div>
         </div>

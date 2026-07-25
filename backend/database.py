@@ -2,6 +2,7 @@ import sqlite3
 import json
 import os
 from typing import List, Dict, Any, Optional
+from experiment_db import init_experiments_table
 
 DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'formulations.db'))
 
@@ -30,6 +31,8 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+    # Initialize experiments table
+    init_experiments_table()
 
 def serialize_field(val: Any) -> str:
     if val is None:

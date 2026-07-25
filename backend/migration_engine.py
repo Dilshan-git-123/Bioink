@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 import os
 import yaml
 import shutil
@@ -369,14 +372,10 @@ def run_migration_engine():
     start_time = datetime.datetime.now()
     log_entries = []
 
-    # ── DEBUG ──────────────────────────────────────────────────────────────────
-    print("\n" + "=" * 60)
-    print("DEBUG: run_migration_engine() started")
-    print(f"  kb_path        : {kb_path}")
-    print(f"  backups_path   : {backups_path}")
-    print(f"  Active targets : {[t['folder'] for t in active_targets]}")
-    print("=" * 60)
-    # ──────────────────────────────────────────────────────────────────────────
+    logger.debug("DEBUG: run_migration_engine() started")
+    logger.info(f"  kb_path        : {kb_path}")
+    logger.info(f"  backups_path   : {backups_path}")
+    logger.info(f"  Active targets : {[t['folder'] for t in active_targets]}")
 
     total_files_found = 0
 
@@ -385,56 +384,42 @@ def run_migration_engine():
         folder_path = target["path"]
         template_path = target["template"]
 
-        # ── DEBUG ──────────────────────────────────────────────────────────────
-        print(f"\nDEBUG: Processing folder '{folder}'")
-        print(f"  Folder path   : {folder_path}")
-        print(f"  Template path : {template_path}")
-        print(f"  Template exists: {os.path.exists(template_path)}")
-        # ──────────────────────────────────────────────────────────────────────
+        logger.debug(f"\nDEBUG: Processing folder '{folder}'")
+        logger.info(f"  Folder path   : {folder_path}")
+        logger.info(f"  Template path : {template_path}")
+        logger.info(f"  Template exists: {os.path.exists(template_path)}")
 
         try:
             with open(template_path, 'r', encoding='utf-8') as f:
                 template_text = f.read()
                 template_dict = yaml.safe_load(template_text) or {}
-            # ── DEBUG ────────────────────────────────────────────────────────
-            print(f"  Template loaded OK. Top-level keys: {list(template_dict.keys())[:5]} ...")
-            # ────────────────────────────────────────────────────────────────
+            logger.info(f"  Template loaded OK. Top-level keys: {list(template_dict.keys())[:5]} ...")
         except Exception as e:
-            # ── DEBUG ────────────────────────────────────────────────────────
-            print(f"  ERROR loading template: {e}  → skipping folder '{folder}'")
-            # ────────────────────────────────────────────────────────────────
+            logger.error(f"  ERROR loading template: {e}  → skipping folder '{folder}'")
             continue
 
         all_yaml_files = [f for f in os.listdir(folder_path) if f.endswith('.yaml')]
         total_files_found += len(all_yaml_files)
 
-        # ── DEBUG ──────────────────────────────────────────────────────────────
-        print(f"  YAML files found in '{folder}': {all_yaml_files}")
-        # ──────────────────────────────────────────────────────────────────────
+        logger.info(f"  YAML files found in '{folder}': {all_yaml_files}")
 
         for filename in all_yaml_files:
             files_scanned += 1
             target_file_path = os.path.join(folder_path, filename)
             display_name = f"{folder}/{filename}"
 
-            # ── DEBUG ────────────────────────────────────────────────────────
-            print(f"\n  Scanning: {filename}")
-            print(f"    Full path: {target_file_path}")
-            # ────────────────────────────────────────────────────────────────
+            logger.info(f"\n  Scanning: {filename}")
+            logger.info(f"    Full path: {target_file_path}")
 
             try:
                 with open(target_file_path, 'r', encoding='utf-8') as f:
                     target_text = f.read()
                 target_dict = yaml.safe_load(target_text) or {}
-                # ── DEBUG ──────────────────────────────────────────────────
-                print(f"    YAML parsed OK. Top-level keys: {list(target_dict.keys())[:5]} ...")
-                # ──────────────────────────────────────────────────────────
+                logger.info(f"    YAML parsed OK. Top-level keys: {list(target_dict.keys())[:5]} ...")
             except Exception as e:
                 files_skipped += 1
-                # ── DEBUG ──────────────────────────────────────────────────
-                print(f"    Skipping {filename} because:")
-                print(f"      YAML parsing failed => {e}")
-                # ──────────────────────────────────────────────────────────
+                logger.info(f"    Skipping {filename} because:")
+                logger.info(f"      YAML parsing failed => {e}")
                 log_entries.append({
                     "file": display_name,
                     "status": "skipped",
@@ -449,27 +434,23 @@ def run_migration_engine():
 
             compare_dicts(template_dict, target_dict, [], sections_missing, fields_missing, nested_fields_missing)
 
-            # ── DEBUG ────────────────────────────────────────────────────────
-            print(f"    Missing Fields:")
+            logger.warning(f"    Missing Fields:")
             if sections_missing:
                 for s in sections_missing:
-                    print(f"      - [Section] {s}")
+                    logger.info(f"      - [Section] {s}")
             if fields_missing:
                 for f in fields_missing:
-                    print(f"      - [Field]   {f}")
+                    logger.info(f"      - [Field]   {f}")
             if nested_fields_missing:
                 for n in nested_fields_missing:
-                    print(f"      - [Nested]  {n}")
+                    logger.info(f"      - [Nested]  {n}")
             if not (sections_missing or fields_missing or nested_fields_missing):
-                print(f"      (none)")
-            print(f"    Errors: None")
-            # ────────────────────────────────────────────────────────────────
+                logger.info(f"      (none)")
+            logger.warning(f"    Errors: None")
 
             if not (sections_missing or fields_missing or nested_fields_missing):
-                # ── DEBUG ──────────────────────────────────────────────────
-                print(f"    Skipping {filename} because:")
-                print(f"      No missing fields detected => file is up to date")
-                # ──────────────────────────────────────────────────────────
+                logger.info(f"    Skipping {filename} because:")
+                logger.info(f"      No missing fields detected => file is up to date")
                 log_entries.append({
                     "file": display_name,
                     "status": "unchanged"
@@ -483,10 +464,8 @@ def run_migration_engine():
             shutil.copy2(target_file_path, backup_file_path)
             backups_created += 1
 
-            # ── DEBUG ────────────────────────────────────────────────────────
-            print(f"    Backup created:")
-            print(f"      {backup_filename}")
-            # ────────────────────────────────────────────────────────────────
+            logger.info(f"    Backup created:")
+            logger.info(f"      {backup_filename}")
 
             # Merge missing paths (sort by length so parents come before children)
             missing_paths = []
@@ -507,10 +486,8 @@ def run_migration_engine():
             with open(target_file_path, 'w', encoding='utf-8') as f:
                 f.write(modified_text)
 
-            # ── DEBUG ────────────────────────────────────────────────────────
-            print(f"    Writing updated file:")
-            print(f"      {filename}")
-            # ────────────────────────────────────────────────────────────────
+            logger.info(f"    Writing updated file:")
+            logger.info(f"      {filename}")
 
             files_updated += 1
             log_entries.append({
@@ -524,16 +501,12 @@ def run_migration_engine():
     end_time = datetime.datetime.now()
     duration = (end_time - start_time).total_seconds()
 
-    # ── DEBUG ──────────────────────────────────────────────────────────────────
-    print("\n" + "=" * 60)
-    print("DEBUG: run_migration_engine() FINAL SUMMARY")
-    print(f"  Total Files Found   : {total_files_found}")
-    print(f"  Total Files Scanned : {files_scanned}")
-    print(f"  Files Updated       : {files_updated}")
-    print(f"  Files Skipped       : {files_skipped}")
-    print(f"  Backups Created     : {backups_created}")
-    print("=" * 60 + "\n")
-    # ──────────────────────────────────────────────────────────────────────────
+    logger.debug("DEBUG: run_migration_engine() FINAL SUMMARY")
+    logger.info(f"  Total Files Found   : {total_files_found}")
+    logger.info(f"  Total Files Scanned : {files_scanned}")
+    logger.info(f"  Files Updated       : {files_updated}")
+    logger.info(f"  Files Skipped       : {files_skipped}")
+    logger.info(f"  Backups Created     : {backups_created}")
 
     log_summary = {
         "Migration Version": "2.0",

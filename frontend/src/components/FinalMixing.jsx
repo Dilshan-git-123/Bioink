@@ -32,7 +32,7 @@ function FinalMixing({
 
           <input
             type="number"
-            value={finalMixing.temperature}
+            value={finalMixing?.temperature ?? ""}
             onChange={(e) =>
               updateField("temperature", e.target.value)
             }
@@ -49,7 +49,7 @@ function FinalMixing({
 
           <input
             type="number"
-            value={finalMixing.time}
+            value={finalMixing?.time ?? ""}
             onChange={(e) =>
               updateField("time", e.target.value)
             }
@@ -66,7 +66,7 @@ function FinalMixing({
 
           <input
             type="number"
-            value={finalMixing.rpm}
+            value={finalMixing?.rpm ?? ""}
             onChange={(e) =>
               updateField("rpm", e.target.value)
             }
@@ -82,7 +82,7 @@ function FinalMixing({
           </label>
 
           <select
-            value={finalMixing.crosslinking}
+            value={finalMixing?.crosslinking || ""}
             onChange={(e) =>
               updateField("crosslinking", e.target.value)
             }

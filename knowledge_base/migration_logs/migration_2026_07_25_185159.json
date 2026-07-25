@@ -1,0 +1,27 @@
+{
+    "Migration Version": "2.0",
+    "Date": "2026-07-25T18:51:59.342617",
+    "Files Scanned": 4,
+    "Files Updated": 0,
+    "Files Skipped": 0,
+    "Backups Created": 0,
+    "Duration Seconds": 0.154274,
+    "Details": [
+        {
+            "file": "materials/alginate.yaml",
+            "status": "unchanged"
+        },
+        {
+            "file": "materials/collagen.yaml",
+            "status": "unchanged"
+        },
+        {
+            "file": "materials/gelatin.yaml",
+            "status": "unchanged"
+        },
+        {
+            "file": "materials/pectin.yaml",
+            "status": "unchanged"
+        }
+    ]
+}

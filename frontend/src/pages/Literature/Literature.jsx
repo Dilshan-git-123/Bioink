@@ -82,7 +82,7 @@ const Literature = () => {
                         <input 
                             type="text" 
                             placeholder="Search papers, authors, DOIs, or keywords..." 
-                            value={searchQuery}
+                            value={searchQuery || ""}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>

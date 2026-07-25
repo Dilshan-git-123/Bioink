@@ -23,6 +23,19 @@ from database import (
     db_update_project,
     db_delete_project
 )
+from schemas.experiment import (
+    ExperimentCreate,
+    ExperimentRead,
+    ExperimentUpdate
+)
+from experiment_db import (
+    db_create_experiment,
+    db_get_experiments,
+    db_get_experiment_by_id,
+    db_update_experiment,
+    db_delete_experiment,
+    db_duplicate_experiment,
+)
 
 
 app = FastAPI(title="BioInkAI API")
@@ -186,24 +199,9 @@ def predict(data: BioinkRequest):
     # Step 4: Generate Intelligent Suggestions
     # ----------------------------------------------------------
 
-    print("\n==============================")
-    print("Prediction BEFORE Suggestions")
-    print("==============================")
-    print(prediction)
-
     suggestions = generate_suggestions(prediction)
 
-    print("\n==============================")
-    print("Generated Suggestions")
-    print("==============================")
-    print(suggestions)
-
     prediction["suggestions"] = suggestions["suggestions"]
-
-    print("\n==============================")
-    print("Final Prediction")
-    print("==============================")
-    print(prediction)
 
     return prediction
 
@@ -330,7 +328,7 @@ def literature_recommendation(data: BioinkRequest):
 @app.post("/projects", response_model=ProjectResponse)
 def create_project(data: ProjectCreate):
     project_id = str(uuid.uuid4())
-    now = datetime.datetime.utcnow().isoformat()
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
     project = {
         "id": project_id,
         "name": data.name,
@@ -373,7 +371,7 @@ def update_project_endpoint(project_id: str, data: ProjectUpdate):
         if val is not None:
             updates[key] = val
             
-    updates["last_modified_date"] = datetime.datetime.utcnow().isoformat()
+    updates["last_modified_date"] = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
     updated = db_update_project(project_id, updates)
     return updated
 
@@ -481,3 +479,86 @@ def restore_migration(data: RestoreRequest):
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error"))
     return result
+
+
+# ------------------------------------------------
+# Experiment History
+# ------------------------------------------------
+
+class ExperimentCreateRequest(BaseModel):
+    project_id: str
+    project_name: str
+    tissue_type: Optional[str] = None
+    biomaterials: Optional[Any] = None
+    final_mixing: Optional[Any] = None
+    prediction_results: Optional[Any] = None
+    compatibility_analysis: Optional[Any] = None
+    generated_protocol: Optional[str] = None
+    user_notes: Optional[str] = None
+    is_favorite: Optional[bool] = False
+
+
+class ExperimentUpdateRequest(BaseModel):
+    user_notes: Optional[str] = None
+    is_favorite: Optional[bool] = None
+
+
+@app.post("/experiments")
+def create_experiment(data: ExperimentCreateRequest):
+    exp_id = str(uuid.uuid4())
+    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
+    exp = {
+        "id": exp_id,
+        "timestamp": now,
+        "project_id": data.project_id,
+        "project_name": data.project_name,
+        "tissue_type": data.tissue_type,
+        "biomaterials": data.biomaterials,
+        "final_mixing": data.final_mixing,
+        "prediction_results": data.prediction_results,
+        "compatibility_analysis": data.compatibility_analysis,
+        "generated_protocol": data.generated_protocol,
+        "user_notes": data.user_notes,
+        "is_favorite": data.is_favorite or False,
+    }
+    created = db_create_experiment(exp)
+    return created
+
+
+@app.get("/experiments")
+def list_experiments():
+    return db_get_experiments()
+
+
+@app.get("/experiments/{experiment_id}")
+def get_experiment(experiment_id: str):
+    exp = db_get_experiment_by_id(experiment_id)
+    if not exp:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    return exp
+
+
+@app.put("/experiments/{experiment_id}")
+def update_experiment(experiment_id: str, data: ExperimentUpdateRequest):
+    exp = db_get_experiment_by_id(experiment_id)
+    if not exp:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    updates = {k: v for k, v in data.model_dump(exclude_unset=True).items() if v is not None}
+    updated = db_update_experiment(experiment_id, updates)
+    return updated
+
+
+@app.delete("/experiments/{experiment_id}")
+def delete_experiment(experiment_id: str):
+    deleted = db_delete_experiment(experiment_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    return {"success": True}
+
+
+@app.post("/experiments/{experiment_id}/duplicate")
+def duplicate_experiment(experiment_id: str):
+    duplicated = db_duplicate_experiment(experiment_id)
+    if not duplicated:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    return duplicated

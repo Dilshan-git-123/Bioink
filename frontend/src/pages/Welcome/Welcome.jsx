@@ -42,6 +42,7 @@ const Welcome = () => {
     const [projectDescription, setProjectDescription] = useState('');
     const [nameError, setNameError]               = useState('');
     const [nameSuggestions, setNameSuggestions]   = useState([]);
+    const [isCreating, setIsCreating]             = useState(false);
 
     useEffect(() => {
         const hour = new Date().getHours();
@@ -94,30 +95,35 @@ const Welcome = () => {
         setNameSuggestions([]);
     };
 
-    const handleSubmitProject = () => {
-        const trimmed = projectName.trim();
+    const handleSubmitProject = async () => {
+        const trimmed = projectName || "";
 
         // Validation: empty name
-        if (!trimmed) {
+        if (!trimmed.trim()) {
             setNameError('Project name is required.');
             setNameSuggestions([]);
             return;
         }
 
         // Validation: duplicate name (Feature 1 & Feature 2)
-        if (isDuplicateName(trimmed, editingProjectId)) {
-            setNameError(`A project named "${trimmed}" already exists.`);
-            setNameSuggestions(getSuggestions(trimmed));
+        if (isDuplicateName(trimmed.trim(), editingProjectId)) {
+            setNameError(`A project named "${trimmed.trim()}" already exists.`);
+            setNameSuggestions(getSuggestions(trimmed.trim()));
             return;
         }
 
-        if (modalMode === 'create') {
-            createProject(trimmed, projectDescription.trim());
-            setIsModalOpen(false);
-            navigate('/designer');
-        } else {
-            updateProject(editingProjectId, { projectName: trimmed, description: projectDescription.trim() });
-            setIsModalOpen(false);
+        setIsCreating(true);
+        try {
+            if (modalMode === 'create') {
+                await createProject(trimmed.trim(), projectDescription || "");
+                setIsModalOpen(false);
+                navigate('/designer');
+            } else {
+                await updateProject(editingProjectId, { projectName: trimmed.trim(), description: projectDescription || "" });
+                setIsModalOpen(false);
+            }
+        } finally {
+            setIsCreating(false);
         }
     };
 
@@ -339,7 +345,7 @@ const Welcome = () => {
                             type="text"
                             className={`form-input ${nameError ? 'input-error' : ''}`}
                             placeholder="e.g. Alginate-GelMA Cardiac Patch"
-                            value={projectName}
+                            value={projectName || ""}
                             onChange={handleNameChange}
                             onKeyDown={e => e.key === 'Enter' && handleSubmitProject()}
                             autoFocus
@@ -380,7 +386,7 @@ const Welcome = () => {
                             id="project-description"
                             className="form-textarea"
                             placeholder="Briefly describe the goal of this formulation..."
-                            value={projectDescription}
+                            value={projectDescription || ""}
                             onChange={e => setProjectDescription(e.target.value)}
                             rows={3}
                             maxLength={500}
@@ -388,12 +394,22 @@ const Welcome = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="form-actions">
-                        <button id="cancel-project-btn" className="btn-cancel" onClick={handleCloseModal}>
+                        <button 
+                            id="cancel-project-btn" 
+                            className="btn-cancel" 
+                            onClick={handleCloseModal}
+                            disabled={isCreating}
+                        >
                             Cancel
                         </button>
-                        <button id="create-project-btn" className="btn-create" onClick={handleSubmitProject}>
-                            {modalMode === 'create' ? "Create Project" : "Save Changes"}
+                        <button 
+                            id="create-project-btn" 
+                            className="btn-create" 
+                            onClick={handleSubmitProject}
+                            disabled={isCreating}
+                            style={{ opacity: isCreating ? 0.7 : 1, cursor: isCreating ? 'not-allowed' : 'pointer' }}
+                        >
+                            {isCreating ? (modalMode === 'create' ? "Creating Project..." : "Saving...") : (modalMode === 'create' ? "Create Project" : "Save Changes")}
                         </button>
                     </div>
                 </div>

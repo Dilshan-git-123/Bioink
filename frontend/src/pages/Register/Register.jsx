@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaMicroscope, FaUser } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaMicroscope, FaUser, FaSpinner } from 'react-icons/fa';
 import './Register.css';
 
 const Register = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            navigate('/login');
+        }, 1000);
+    };
 
     return (
         <div className="register-page">
@@ -35,7 +45,7 @@ const Register = () => {
                             <p>Sign up to set up your laboratory workspace</p>
                         </div>
 
-                        <form className="register-form" onSubmit={(e) => e.preventDefault()}>
+                        <form className="register-form" onSubmit={handleRegister}>
                             <div className="input-group">
                                 <label>Full Name</label>
                                 <div className="input-wrapper">
@@ -68,8 +78,13 @@ const Register = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="register-submit-btn">
-                                Create Account
+                            <button 
+                                type="submit" 
+                                className="register-submit-btn" 
+                                disabled={loading}
+                                style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+                            >
+                                {loading ? <><FaSpinner className="fa-spin" /> Creating Account...</> : "Create Account"}
                             </button>
                         </form>
 
