@@ -7,6 +7,7 @@ function PredictionEngine({
   materials,
   finalMixing,
   setPrediction,
+  loading,
   setLoading,
   setError
 }) {

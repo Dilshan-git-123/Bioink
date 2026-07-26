@@ -393,7 +393,9 @@ const Welcome = () => {
                         />
                     </div>
 
+
                     {/* Actions */}
+                    <div className="modal-actions">
                         <button 
                             id="cancel-project-btn" 
                             className="btn-cancel" 
@@ -413,6 +415,7 @@ const Welcome = () => {
                         </button>
                     </div>
                 </div>
+
             </Modal>
         </div>
     );
