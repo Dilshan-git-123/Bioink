@@ -29,6 +29,34 @@ def init_db():
             status TEXT                   -- 'Draft' or 'Completed'
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            provider TEXT,
+            provider_id TEXT,
+            profile_picture TEXT,
+            created_at TEXT NOT NULL,
+            last_login TEXT,
+            reset_token TEXT DEFAULT NULL,
+            reset_token_expiry TEXT DEFAULT NULL
+        )
+    """)
+    # Perform migration for older schemas
+    cursor.execute("PRAGMA table_info(users)")
+    existing_columns = [row[1] for row in cursor.fetchall()]
+    if "provider" not in existing_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN provider TEXT")
+    if "provider_id" not in existing_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN provider_id TEXT")
+    if "profile_picture" not in existing_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN profile_picture TEXT")
+    if "reset_token" not in existing_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN reset_token TEXT DEFAULT NULL")
+    if "reset_token_expiry" not in existing_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expiry TEXT DEFAULT NULL")
     conn.commit()
     conn.close()
     # Initialize experiments table
@@ -145,6 +173,100 @@ def db_delete_project(project_id: str) -> bool:
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM projects WHERE id = ?", (project_id,))
+    changes = conn.total_changes
+    conn.commit()
+    conn.close()
+    return changes > 0
+
+def db_create_user(user: Dict[str, Any]) -> Dict[str, Any]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT INTO users (
+            id, name, email, password, provider, provider_id, profile_picture, created_at, last_login, reset_token, reset_token_expiry
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            user['id'],
+            user['name'],
+            user['email'],
+            user['password'],
+            user.get('provider'),
+            user.get('provider_id'),
+            user.get('profile_picture'),
+            user['created_at'],
+            user.get('last_login'),
+            user.get('reset_token'),
+            user.get('reset_token_expiry')
+        )
+    )
+    conn.commit()
+    conn.close()
+    return db_get_user_by_id(user['id'])
+
+def db_get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, email, provider, provider_id, profile_picture, created_at, last_login, reset_token, reset_token_expiry FROM users WHERE id = ?", (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return dict(row)
+    return None
+
+def db_get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, email, provider, provider_id, profile_picture, password, created_at, last_login, reset_token, reset_token_expiry FROM users WHERE email = ?", (email.lower().strip(),))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return dict(row)
+    return None
+
+def db_update_user_last_login(user_id: str, timestamp: str):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE users SET last_login = ? WHERE id = ?",
+        (timestamp, user_id)
+    )
+    conn.commit()
+    conn.close()
+
+def db_update_user_reset_token(email: str, reset_token: Optional[str], reset_token_expiry: Optional[str]) -> bool:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?",
+        (reset_token, reset_token_expiry, email.lower().strip())
+    )
+    changes = conn.total_changes
+    conn.commit()
+    conn.close()
+    return changes > 0
+
+def db_get_user_by_reset_token(reset_token: str) -> Optional[Dict[str, Any]]:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, name, email, provider, provider_id, profile_picture, created_at, last_login, reset_token, reset_token_expiry FROM users WHERE reset_token = ?",
+        (reset_token,)
+    )
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return dict(row)
+    return None
+
+def db_update_user_password(user_id: str, hashed_password: str) -> bool:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?",
+        (hashed_password, user_id)
+    )
     changes = conn.total_changes
     conn.commit()
     conn.close()

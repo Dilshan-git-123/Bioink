@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import "../styles/header.css";
 import {
   FaBell,
@@ -6,6 +7,19 @@ import {
 } from "react-icons/fa";
 
 function Header() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const cachedUser = localStorage.getItem("user");
+    if (cachedUser) {
+      try {
+        setUser(JSON.parse(cachedUser));
+      } catch (e) {
+        console.error("Error parsing user from localStorage:", e);
+      }
+    }
+  }, []);
+
   return (
     <header className="header">
 
@@ -32,7 +46,7 @@ function Header() {
 
           <div>
 
-            <h4>GT</h4>
+            <h4>{user ? user.name : "GT"}</h4>
 
             <p>Researcher</p>
 

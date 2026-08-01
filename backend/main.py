@@ -2,10 +2,11 @@ import os
 import re
 import datetime
 import uuid
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
+from auth.auth_routes import router as auth_router, get_current_user
 
 from predictor import predict_bioink
 from validator import validate_bioink
@@ -39,6 +40,7 @@ from experiment_db import (
 
 
 app = FastAPI(title="BioInkAI API")
+app.include_router(auth_router)
 
 @app.on_event("startup")
 def startup_event():
@@ -134,7 +136,7 @@ def root():
 # ------------------------------------------------
 
 @app.post("/predict")
-def predict(data: BioinkRequest):
+def predict(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
 
     # ----------------------------------------------------------
     # Step 1: Validate every material
@@ -211,7 +213,7 @@ def predict(data: BioinkRequest):
 # ------------------------------------------------
 
 @app.post("/optimize")
-def optimize(data: BioinkRequest):
+def optimize(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
 
     materials = [mat.model_dump() for mat in data.materials]
 
@@ -234,7 +236,7 @@ def optimize(data: BioinkRequest):
 # ------------------------------------------------
 
 @app.post("/protocol")
-def protocol(data: BioinkRequest):
+def protocol(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
 
     materials = [mat.model_dump() for mat in data.materials]
 
@@ -258,7 +260,7 @@ def protocol(data: BioinkRequest):
 # ------------------------------------------------
 
 @app.get("/tissue/{tissue_name}")
-def get_tissue_recommendation(tissue_name: str):
+def get_tissue_recommendation(tissue_name: str, current_user: dict = Depends(get_current_user)):
 
     recommendation = recommend_tissue(tissue_name)
 
@@ -305,7 +307,7 @@ LITERATURE_DB = {
 # ------------------------------------------------
 
 @app.post("/literature")
-def literature_recommendation(data: BioinkRequest):
+def literature_recommendation(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
 
     papers = []
 
@@ -326,7 +328,7 @@ def literature_recommendation(data: BioinkRequest):
 # ------------------------------------------------
 
 @app.post("/projects", response_model=ProjectResponse)
-def create_project(data: ProjectCreate):
+def create_project(data: ProjectCreate, current_user: dict = Depends(get_current_user)):
     project_id = str(uuid.uuid4())
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
     project = {
@@ -347,12 +349,12 @@ def create_project(data: ProjectCreate):
 
 
 @app.get("/projects", response_model=List[ProjectResponse])
-def get_projects():
+def get_projects(current_user: dict = Depends(get_current_user)):
     return db_get_projects()
 
 
 @app.get("/projects/{project_id}", response_model=ProjectResponse)
-def get_project(project_id: str):
+def get_project(project_id: str, current_user: dict = Depends(get_current_user)):
     project = db_get_project_by_id(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -360,7 +362,7 @@ def get_project(project_id: str):
 
 
 @app.put("/projects/{project_id}", response_model=ProjectResponse)
-def update_project_endpoint(project_id: str, data: ProjectUpdate):
+def update_project_endpoint(project_id: str, data: ProjectUpdate, current_user: dict = Depends(get_current_user)):
     project = db_get_project_by_id(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -377,7 +379,7 @@ def update_project_endpoint(project_id: str, data: ProjectUpdate):
 
 
 @app.delete("/projects/{project_id}")
-def delete_project_endpoint(project_id: str):
+def delete_project_endpoint(project_id: str, current_user: dict = Depends(get_current_user)):
     deleted = db_delete_project(project_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -397,7 +399,7 @@ class MaterialGenerateRequest(BaseModel):
     grade: str
 
 @app.post("/materials/generate")
-def generate_material(data: MaterialGenerateRequest):
+def generate_material(data: MaterialGenerateRequest, current_user: dict = Depends(get_current_user)):
     # Validation
     if not data.materialName.strip():
         raise HTTPException(status_code=400, detail="Material name cannot be empty.")
@@ -455,26 +457,26 @@ def generate_material(data: MaterialGenerateRequest):
 # ------------------------------------------------
 
 @app.get("/migration/preview")
-def preview_migration():
+def preview_migration(current_user: dict = Depends(get_current_user)):
     return preview_migration_engine()
 
 @app.post("/migration/run")
-def run_migration():
+def run_migration(current_user: dict = Depends(get_current_user)):
     return run_migration_engine()
 
 @app.get("/migration/logs")
-def migration_logs():
+def migration_logs(current_user: dict = Depends(get_current_user)):
     return get_migration_logs()
 
 @app.get("/migration/backups")
-def migration_backups():
+def migration_backups(current_user: dict = Depends(get_current_user)):
     return get_backups_list()
 
 class RestoreRequest(BaseModel):
     backup_filename: str
 
 @app.post("/migration/restore")
-def restore_migration(data: RestoreRequest):
+def restore_migration(data: RestoreRequest, current_user: dict = Depends(get_current_user)):
     result = restore_backup(data.backup_filename)
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("error"))
@@ -504,7 +506,7 @@ class ExperimentUpdateRequest(BaseModel):
 
 
 @app.post("/experiments")
-def create_experiment(data: ExperimentCreateRequest):
+def create_experiment(data: ExperimentCreateRequest, current_user: dict = Depends(get_current_user)):
     exp_id = str(uuid.uuid4())
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
     exp = {
@@ -526,12 +528,12 @@ def create_experiment(data: ExperimentCreateRequest):
 
 
 @app.get("/experiments")
-def list_experiments():
+def list_experiments(current_user: dict = Depends(get_current_user)):
     return db_get_experiments()
 
 
 @app.get("/experiments/{experiment_id}")
-def get_experiment(experiment_id: str):
+def get_experiment(experiment_id: str, current_user: dict = Depends(get_current_user)):
     exp = db_get_experiment_by_id(experiment_id)
     if not exp:
         raise HTTPException(status_code=404, detail="Experiment not found")
@@ -539,7 +541,7 @@ def get_experiment(experiment_id: str):
 
 
 @app.put("/experiments/{experiment_id}")
-def update_experiment(experiment_id: str, data: ExperimentUpdateRequest):
+def update_experiment(experiment_id: str, data: ExperimentUpdateRequest, current_user: dict = Depends(get_current_user)):
     exp = db_get_experiment_by_id(experiment_id)
     if not exp:
         raise HTTPException(status_code=404, detail="Experiment not found")
@@ -549,7 +551,7 @@ def update_experiment(experiment_id: str, data: ExperimentUpdateRequest):
 
 
 @app.delete("/experiments/{experiment_id}")
-def delete_experiment(experiment_id: str):
+def delete_experiment(experiment_id: str, current_user: dict = Depends(get_current_user)):
     deleted = db_delete_experiment(experiment_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Experiment not found")
@@ -557,7 +559,7 @@ def delete_experiment(experiment_id: str):
 
 
 @app.post("/experiments/{experiment_id}/duplicate")
-def duplicate_experiment(experiment_id: str):
+def duplicate_experiment(experiment_id: str, current_user: dict = Depends(get_current_user)):
     duplicated = db_duplicate_experiment(experiment_id)
     if not duplicated:
         raise HTTPException(status_code=404, detail="Experiment not found")

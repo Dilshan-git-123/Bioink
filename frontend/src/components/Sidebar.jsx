@@ -19,8 +19,22 @@ function Sidebar() {
 
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        navigate('/login');
+    const handleLogout = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (token) {
+                await fetch('http://127.0.0.1:8000/auth/logout', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            }
+        } catch (e) {
+            console.error("Logout request failed:", e);
+        } finally {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate('/login');
+        }
     };
 
     const menuItems = [
