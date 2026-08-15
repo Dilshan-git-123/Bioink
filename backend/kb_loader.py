@@ -1,6 +1,7 @@
 import os
 import yaml
 from typing import Dict, Any
+from knowledge_engine.loader import loader
 
 KB_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'knowledge_base'))
 
@@ -40,7 +41,16 @@ class KnowledgeBaseLoader:
         self.protocols = _load_directory('protocols')
         
     def get_material(self, name: str) -> Dict[str, Any]:
-        return self.materials.get(name.lower(), {})
+        """
+        Load a material using the Knowledge Engine.
+        """
+
+        try:
+            return loader.load_material(name)
+
+        except Exception as e:
+            print(f"[KnowledgeBase] Failed to load material '{name}': {e}")
+            return {}
         
     def get_combination(self, name: str) -> Dict[str, Any]:
         return self.combinations.get(name.lower(), {})

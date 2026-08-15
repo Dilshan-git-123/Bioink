@@ -7,10 +7,14 @@ import {
 } from '../utils/projectStorage';
 import {
     fetchProjects as apiFetchProjects,
+    fetchProjectById as apiFetchProjectById,
     createBackendProject as apiCreateProject,
     updateBackendProject as apiUpdateProject,
     deleteBackendProject as apiDeleteProject
 } from '../services/projectApi';
+
+// ─── sessionStorage key for active project ID ──────────────────────────────
+const SESSION_KEY = 'bioinkAI_active_project_id';
 
 const ProjectContext = createContext(null);
 
@@ -19,18 +23,60 @@ export const ProjectProvider = ({ children }) => {
     const [activeProject, setActiveProject] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [lastSaved, setLastSaved] = useState(null);
-    
+    // True until the initial project list + active-project restoration is done.
+    // Prevents the Designer from seeing a false-null activeProject mid-restore.
+    const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+
     const saveTimeoutRef = useRef({});
 
-    // ─── Load projects from Backend API on mount ────────────────────────────
+    // ─── Atomic helper: set activeProject AND sync sessionStorage ─────────────
+    const _setActive = useCallback((project) => {
+        setActiveProject(project);
+        if (project?.projectId) {
+            sessionStorage.setItem(SESSION_KEY, project.projectId);
+        } else {
+            sessionStorage.removeItem(SESSION_KEY);
+        }
+    }, []);
+
+    // ─── Load projects from Backend API on mount, then restore active project ─
     const loadAllProjects = useCallback(async () => {
+        setIsLoadingProjects(true);
+        let loadedProjects = [];
         try {
-            const data = await apiFetchProjects();
-            setProjects(data);
+            loadedProjects = await apiFetchProjects();
+            setProjects(loadedProjects);
         } catch (err) {
             console.error('[BioInkAI] Failed to fetch projects from API, falling back to localStorage:', err);
-            setProjects(loadProjects());
+            loadedProjects = loadProjects();
+            setProjects(loadedProjects);
         }
+
+        // ── Restore active project from sessionStorage ────────────────────────
+        const storedId = sessionStorage.getItem(SESSION_KEY);
+        if (storedId) {
+            // 1. Try to find it in the freshly loaded list first (no extra request)
+            const found = loadedProjects.find(p => p.projectId === storedId);
+            if (found) {
+                setActiveProject(found);
+            } else {
+                // 2. Fallback: fetch directly from backend (e.g. list was incomplete)
+                try {
+                    const fetched = await apiFetchProjectById(storedId);
+                    if (fetched) {
+                        setActiveProject(fetched);
+                    } else {
+                        // 3. Project no longer exists — clear stale ID
+                        sessionStorage.removeItem(SESSION_KEY);
+                    }
+                } catch {
+                    // 404 or network error — clear stale ID, stay null
+                    sessionStorage.removeItem(SESSION_KEY);
+                }
+            }
+        }
+
+        setIsLoadingProjects(false);
     }, []);
 
     useEffect(() => {
@@ -91,12 +137,14 @@ export const ProjectProvider = ({ children }) => {
 
         // Instantly update UI state for responsiveness
         setProjects(prev => [...prev, tempProject]);
+        // Do NOT persist tempId — we'll store the real UUID after backend responds
         setActiveProject(tempProject);
 
         try {
             const created = await apiCreateProject(tempProject);
             setProjects(prev => prev.map(p => p.projectId === tempId ? created : p));
-            setActiveProject(created);
+            // Store the real backend UUID, not the temp one
+            _setActive(created);
             
             // Also update localStorage backup
             const allLocal = loadProjects();
@@ -107,10 +155,10 @@ export const ProjectProvider = ({ children }) => {
             console.error('[BioInkAI] Failed to create project on backend, using local:', err);
             const realLocalId = Date.now().toString();
             const localProj = { ...tempProject, projectId: realLocalId };
-            
+
             setProjects(prev => prev.map(p => p.projectId === tempId ? localProj : p));
-            setActiveProject(localProj);
-            
+            _setActive(localProj);
+
             const allLocal = loadProjects();
             saveProjects([...allLocal, localProj]);
             return localProj;
@@ -223,9 +271,11 @@ export const ProjectProvider = ({ children }) => {
     // ─── Open an existing project ───────────────────────────────────────────
     const openProject = useCallback((projectId) => {
         const found = projects.find(p => p.projectId === projectId);
-        if (found) setActiveProject(found);
+        if (found) {
+            _setActive(found);          // updates both React state + sessionStorage
+        }
         return found || null;
-    }, [projects]);
+    }, [projects, _setActive]);
 
     // ─── Duplicate (Clone) Project ──────────────────────────────────────────
     const duplicateProject = useCallback(async (projectId) => {
@@ -255,7 +305,9 @@ export const ProjectProvider = ({ children }) => {
         try {
             const created = await apiCreateProject(newProjectTemplate);
             setProjects(prev => [...prev, created]);
-            
+            // If duplicateProject is ever used to open the clone, persist its ID
+            _setActive(created);
+
             const allLocal = loadProjects();
             saveProjects([...allLocal, created]);
             return created;
@@ -284,7 +336,7 @@ export const ProjectProvider = ({ children }) => {
                 return updated;
             });
             if (activeProject?.projectId === projectId) {
-                setActiveProject(null);
+                _setActive(null);       // clears sessionStorage too
             }
         } catch (err) {
             console.error('[BioInkAI] Failed to delete project on backend, using local:', err);
@@ -294,7 +346,7 @@ export const ProjectProvider = ({ children }) => {
                 return updated;
             });
             if (activeProject?.projectId === projectId) {
-                setActiveProject(null);
+                _setActive(null);       // clears sessionStorage too
             }
         }
     }, [projects, activeProject]);
@@ -325,6 +377,7 @@ export const ProjectProvider = ({ children }) => {
             activeProject,
             isSaving,
             lastSaved,
+            isLoadingProjects,
             setActiveProject,
             createProject,
             updateProject,

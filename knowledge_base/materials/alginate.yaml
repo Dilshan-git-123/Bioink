@@ -16,49 +16,229 @@ Knowledge Base Metadata:
   Confidence Score: "[Placeholder]"
   Verification Status: "Unverified"
   Review Notes: "[Placeholder]"
+  Material ID: "MAT-[XXXX]"
 
 # 1. Material Information
 Material Information:
-  Material Name: Alginate
-  Scientific Name: Sodium Alginate
-  Common Names: 
-    - Algin
-  Description: "[Placeholder Description]"
-  Source: Brown seaweed
-  Material Type: Natural
-  Grade: Research / Medical / Pharmaceutical
-  CAS Number: "[Placeholder CAS]"
+  Material Name: "Alginate"
+  Scientific Name: "Sodium Alginate"
+
+  Common Names:
+    - "Algin"
+    - "Alginic Acid Sodium Salt"
+
+  Abbreviation: "SA"
+
+  Description: >
+    Sodium alginate is a naturally occurring anionic polysaccharide
+    extracted primarily from the cell walls of brown seaweeds.
+    It is one of the most widely used biomaterials in 3D bioprinting
+    due to its excellent biocompatibility, rapid ionic gelation with
+    divalent cations, shear-thinning behavior, and ability to form
+    mechanically stable hydrogels. Because of its mild gelation process,
+    sodium alginate is extensively used for cell encapsulation,
+    tissue engineering, regenerative medicine, drug delivery,
+    and biofabrication.
+
+  Source:
+    Category: "Natural"
+
+    Primary Sources:
+      - "Brown Seaweed"
+
+    Major Species:
+      - "Laminaria spp."
+      - "Macrocystis pyrifera"
+      - "Ascophyllum nodosum"
+
+  Material Type: "Natural Polymer"
+
+  Polymer Class: "Anionic Polysaccharide"
+
+  Origin: "Marine"
+
+  Grade:
+    - "Research Grade"
+    - "Medical Grade"
+    - "Pharmaceutical Grade"
+    - "Food Grade"
+
+  CAS Number: "9005-38-3"
+
+  Chemical Formula: "(C6H7NaO6)n"
+
+  FDA Status:
+    Food Use: "GRAS (21 CFR 184.1724)"
+    Biomedical Use: "Not specifically FDA approved as a bioink"
+
+  Printable: true
+
+  Bioink Role:
+    - "Structural Hydrogel"
+    - "Cell Encapsulation Matrix"
+    - "Extrusion Bioink"
+
+  Commercial Availability: "High"
+
+  Typical Suppliers:
+    - "Sigma-Aldrich (Merck)"
+    - "Thermo Fisher Scientific"
+    - "FUJIFILM Irvine Scientific"
+    - "NovaMatrix"
+    - "Merck Life Science"
 
 # 2. Physical Properties
 Physical Properties:
-  Appearance: White to yellowish-brown powder
-  Color: "[White / Yellowish-brown]"
-  Solubility: Soluble in water
-  Density: "[Placeholder] g/cm³"
-  Molecular Weight: "[Placeholder] kDa"
-  Viscosity Information: "[Placeholder] cP (Concentration dependent)"
-  Thermal Stability: Stable up to ~150°C (degrades at higher temps)
-  Storage Temperature: 2-8°C or room temperature (store dry)
-  Shelf Life: "[Placeholder] months"
-  Sterilization Method: 
-    - UV irradiation
-    - Sterile filtration (low concentration)
-    - Autoclaving (may reduce molecular weight)
+
+  General:
+    Appearance: "White to pale yellow powder"
+    Color: "White to pale yellow"
+    Physical State: "Powder"
+    Odor: "Odorless"
+
+  Molecular Properties:
+    Molecular Weight:
+      Value: "50–1000"
+      Unit: "kDa"
+      Notes: "Commercial sodium alginate is available in a wide molecular weight range depending on source and manufacturer."
+
+    Density:
+      Value: "1.6"
+      Unit: "g/cm³"
+
+  Rheological Properties:
+    Viscosity:
+      Value: "Concentration dependent"
+      Unit: "cP"
+      Notes: "Viscosity increases with concentration and molecular weight."
+
+    Shear Thinning Behavior:
+      Present: true
+      Scientific Notes: "Alginate exhibits shear-thinning behavior, making it highly suitable for extrusion-based bioprinting."
+
+  Thermal Properties:
+    Thermal Stability:
+      Value: "~150"
+      Unit: "°C"
+
+    Glass Transition Temperature:
+      Value: "Not Well Defined"
+      Unit: "°C"
+
+    Melting Point:
+      Value: "Not Applicable (decomposes before melting)"
+      Unit: "°C"
+
+  Solubility:
+
+    Water:
+      Solubility: "Highly Soluble"
+
+    Organic Solvents:
+      Solubility: "Insoluble"
+
+  Storage:
+
+    Recommended Temperature:
+      Value: "2-8"
+      Unit: "°C"
+
+    Moisture Sensitivity: "Medium"
+
+    Light Sensitivity: "Low"
+
+    Shelf Life:
+      Value: "24"
+      Unit: "Months"
+
+  Sterilization:
+
+    Compatible Methods:
+      - "UV Irradiation"
+      - "Sterile Filtration"
+      - "Autoclaving (may reduce molecular weight)"
+
+    Not Recommended:
+      - "Dry heat sterilization"
+
+  Scientific Notes: >
+    Physical properties vary depending on molecular weight,
+    mannuronic/guluronic acid ratio (M/G ratio),
+    purity, and manufacturer. These properties significantly influence viscosity,
+    printability, and crosslinking behavior.
 
 # Chemical Properties
 Chemical Properties:
-  Charge: "Anionic"
-  Ionic Nature: "Polyelectrolyte"
+
+  General:
+
+    Charge:
+      Value: "Anionic"
+      Notes: "Negative charge originates from carboxylate groups."
+
+    Ionic Nature:
+      Value: "Polyelectrolyte"
+
+    Polymer Type:
+      Value: "Natural Polysaccharide"
+
   Functional Groups:
-    - Carboxyl groups
-    - Hydroxyl groups
-  Water Absorption: "High"
-  Hydrophilicity: "High"
-  Hydrophobicity: "Low"
-  pKa: "3.38 and 3.65 (M and G blocks)"
-  Chemical Stability: "Stable in dry, cool conditions"
-  Oxidation Sensitivity: "Low"
-  Scientific Notes: "Properties heavily depend on the M/G ratio (mannuronate to guluronate)."
+
+    Primary:
+      - "Carboxyl (-COO\u2212)"
+      - "Hydroxyl (-OH)"
+
+    Secondary:
+      - "Guluronic Acid (G-blocks)"
+      - "Mannuronic Acid (M-blocks)"
+
+  Acid Base Properties:
+
+    pKa:
+      Value: "3.38\u20133.65"
+
+    Recommended pH Range:
+      Minimum: 6.5
+      Maximum: 7.5
+
+  Hydration:
+
+    Water Absorption:
+      Value: "High"
+
+    Hydrophilicity:
+      Value: "High"
+
+    Hydrophobicity:
+      Value: "Low"
+
+  Stability:
+
+    Chemical Stability:
+      Value: "Stable under dry, cool storage conditions"
+
+    Oxidation Sensitivity:
+      Value: "Low"
+
+    Hydrolysis Sensitivity:
+      Value: "Low"
+
+    Enzymatic Sensitivity:
+      Value: "Very Low in Mammals"
+
+  Crosslinking Behavior:
+
+    Crosslinkable:
+      Value: "Yes"
+
+    Crosslinking Mechanism:
+      "Ionic crosslinking with divalent cations through the egg-box model."
+
+  Scientific Notes: >
+    The chemical behavior of sodium alginate depends strongly on
+    the mannuronic acid (M) to guluronic acid (G) ratio.
+    Materials with higher G-content generally produce stiffer
+    and stronger hydrogels after ionic crosslinking.
 
 # Safety Information
 Safety Information:
@@ -72,74 +252,303 @@ Safety Information:
 
 # 3. Preparation Parameters
 Preparation Parameters:
-  Recommended Concentration Range: 2-8% w/v
-  Preparation Temperature: Room temperature
-  Preparation Time: 2-4 hours
-  Mixing RPM: 500-1000
-  Hydration Time: "[Placeholder] hours"
-  Mixing Order: Slowly add powder to solvent while stirring
-  Recommended pH: 6.5-7.5
-  Buffer Used: 
-    - PBS
-    - HEPES
-    - DI Water
-  Preparation Notes: Degassing is highly recommended to remove air bubbles before printing.
+
+  Solution Preparation:
+
+    Recommended Concentration:
+      Minimum: 2
+      Maximum: 8
+      Unit: "% (w/v)"
+
+    Solvent:
+      Value: "Sterile Deionized Water or Phase Buffered Saline (PBS)"
+
+    Dissolution Temperature:
+      Value: 25
+      Unit: "°C"
+
+    Preparation Temperature:
+      Value: 20-25
+      Unit: "°C"
+
+  Mixing:
+
+    Mixing Method:
+      Value: "Magnetic Stirrer"
+
+    Mixing Speed:
+      Minimum: 500
+      Maximum: 1000
+      Unit: "RPM"
+
+    Mixing Time:
+      Minimum: 2
+      Maximum: 4
+      Unit: "Hours"
+
+  Filtration:
+
+    Required:
+      Value: "Optional"
+
+    Filter Size:
+      Value: 0.22
+      Unit: "µm"
+
+  Degassing:
+
+    Required:
+      Value: "Yes"
+
+    Method:
+      Value: "Vacuum Degassing or Centrifugation"
+
+  Storage Before Printing:
+
+    Maximum Storage Time:
+      Value: 24
+      Unit: "Hours"
+
+    Recommended Temperature:
+      Value: "2-8"
+      Unit: "°C"
+
+  Scientific Notes: >
+    Sodium alginate should be added gradually to the solvent while
+    stirring continuously to avoid clumping. Complete hydration may
+    require several hours depending on concentration and molecular
+    weight. Degassing before printing helps eliminate air bubbles
+    and improves extrusion consistency.
 
 # 4. Printing Properties
 Printing Properties:
-  Compatible Printing Methods:
-    - Extrusion-based
-  Recommended Printing Temperature: Room temperature (20-25°C)
-  Recommended Nozzle Gauge: 22G - 27G
-  Recommended Pressure Range: "[Placeholder] kPa"
-  Printing Speed: "[Placeholder] mm/s"
-  Shape Fidelity: High (post-crosslinking)
-  Printability Notes: Shear-thinning behavior makes it highly suitable for extrusion.
+
+  Extrusion:
+
+    Printing Temperature:
+      Minimum: 20
+      Maximum: 25
+      Unit: "°C"
+
+    Nozzle Gauge:
+      Minimum: 22
+      Maximum: 27
+      Unit: "G"
+
+    Printing Pressure:
+      Minimum: 20
+      Maximum: 80
+      Unit: "kPa"
+
+    Printing Speed:
+      Minimum: 5
+      Maximum: 20
+      Unit: "mm/s"
+
+  Printability:
+
+    Shape Fidelity:
+      Value: "High"
+
+    Filament Formation:
+      Value: "Good"
+
+    Layer Stability:
+      Value: "High"
+
+    Shear Recovery:
+      Value: "High"
+
+  Post Printing:
+
+    Immediate Crosslinking Required:
+      Value: "Yes"
+
+    Recommended Crosslinker:
+      Value: "Calcium Chloride (CaCl₂)"
+
+    Post Processing:
+      Value: "Ionic crosslinking in calcium chloride solution"
+
+  Printing Compatibility:
+
+    Extrusion Bioprinting:
+      Value: "Yes"
+
+    Inkjet Printing:
+      Value: "Limited"
+
+    Laser Assisted Printing:
+      Value: "No"
+
+    DLP/SLA Printing:
+      Value: "No"
+
+  Scientific Notes: >
+    Sodium alginate exhibits excellent extrusion printability due to
+    its shear-thinning behavior and rapid ionic gelation with calcium
+    ions. Printing performance depends on concentration, molecular
+    weight, nozzle diameter, and extrusion pressure. Immediate
+    crosslinking is recommended to maintain structural fidelity.
 
 # 5. Crosslinking Information
 Crosslinking Information:
-  Compatible Crosslinkers:
-    - CaCl₂
-    - BaCl₂
-    - CaSO₄
-  Incompatible Crosslinkers:
-    - "[List incompatible crosslinkers]"
-  Crosslinking Mechanism: Ionic crosslinking via divalent cations (egg-box model).
-  Recommended Crosslinker Concentration: 50-100 mM (for CaCl₂)
-  Crosslinking Time: "[Placeholder] minutes"
-  Scientific Notes: Barium crosslinks more strongly than calcium, but toxicity must be considered for live cells.
+  Crosslinking Capability:
+    Crosslinkable:
+      Value: "Yes"
+    Crosslinking Type:
+      Value: "Ionic"
+  Primary Crosslinker:
+    Name:
+      Value: "Calcium Chloride (CaCl₂)"
+    Recommended Concentration:
+      Minimum: 0.5
+      Maximum: 2.0
+      Unit: "% (w/v)"
+  Crosslinking Conditions:
+    Temperature:
+      Value: 20-25
+      Unit: "°C"
+    Time:
+      Minimum: 1
+      Maximum: 10
+      Unit: "Minutes"
+  Gelation:
+    Gelation Speed:
+      Value: "Fast"
+    Reversible:
+      Value: "Partially"
+  Mechanical Effect:
+    Effect on Stiffness:
+      Value: "Higher calcium concentration generally increases hydrogel stiffness."
+    Effect on Stability:
+      Value: "Improves structural integrity and shape fidelity after printing."
+  Scientific Notes: >
+    Sodium alginate forms hydrogels through ionic crosslinking with
+    divalent cations, particularly calcium ions, following the
+    egg-box model. Gel properties depend on calcium concentration,
+    exposure time, molecular weight, and the mannuronic/guluronic
+    acid ratio (M/G ratio).
 
 # 6. Biological Properties
 Biological Properties:
-  Cell Adhesion: Poor (lacks mammalian cell adhesion motifs like RGD)
-  Cell Viability: High (typically >90%)
-  Biocompatibility: Excellent
-  Biodegradability: Slow in mammals (lacks alginate lyase)
-  Cytotoxicity: None
-  Immunogenicity: Low (if highly purified)
+  Biocompatibility:
+    Overall Rating:
+      Value: "Excellent"
+    ISO 10993 Status:
+      Value: "Generally considered biocompatible; ISO 10993 evaluation depends on final medical device formulation."
+  Cell Interaction:
+    Cell Adhesion:
+      Value: "Poor"
+    Cell Proliferation:
+      Value: "Moderate"
+    Cell Viability:
+      Value: "Excellent"
+  Biodegradation:
+    Biodegradable:
+      Value: "Yes"
+    Degradation Mechanism:
+      Value: "Ion exchange and gradual dissolution under physiological conditions"
+    Degradation Rate:
+      Value: "Moderate"
+  Immunological Response:
+    Immunogenicity:
+      Value: "Low"
+    Cytotoxicity:
+      Value: "None"
+    Inflammatory Response:
+      Value: "Low"
+  Bioactivity:
+    Supports Cell Encapsulation:
+      Value: "Yes"
+    Supports Tissue Regeneration:
+      Value: "Yes"
+    Growth Factor Binding:
+      Value: "Low"
+  Scientific Notes: >
+    Sodium alginate exhibits excellent cytocompatibility and is widely
+    used for cell encapsulation because of its mild ionic gelation.
+    However, native alginate lacks natural cell adhesion motifs such as
+    RGD peptides, so cell attachment is generally poor unless chemically
+    modified or blended with bioactive materials such as gelatin,
+    collagen, or RGD-functionalized alginate.
 
 # 7. Mechanical Properties
 Mechanical Properties:
-  Elastic Modulus: "[Placeholder] kPa"
-  Compressive Strength: "[Placeholder] kPa"
-  Tensile Strength: "[Placeholder] MPa"
-  Swelling Behaviour: High swelling in aqueous environments
-  Stability: Gradually loses stiffness in physiological solutions due to ion exchange.
+  Elastic Properties:
+    Elastic Modulus:
+      Value: "20–200"
+      Unit: "kPa"
+    Youngs Modulus:
+      Value: "20–200"
+      Unit: "kPa"
+  Strength:
+    Tensile Strength:
+      Value: "10–100"
+      Unit: "kPa"
+    Compressive Strength:
+      Value: "20–300"
+      Unit: "kPa"
+  Rheology:
+    Shear Thinning:
+      Value: "Yes"
+    Yield Stress:
+      Value: "10–100"
+      Unit: "Pa"
+    Shape Fidelity:
+      Value: "High"
+  Stability:
+    Swelling Ratio:
+      Value: "High"
+    Structural Stability:
+      Value: "High"
+  Scientific Notes: >
+    The mechanical properties of alginate hydrogels depend strongly on
+    polymer concentration, molecular weight, M/G ratio, and calcium
+    crosslinking density. Increasing calcium concentration generally
+    increases stiffness and compressive strength but may reduce elasticity
+    and nutrient diffusion.
 
 # 8. Tissue Engineering Applications
 Tissue Engineering Applications:
-  Bone: Suitable (often combined with hydroxyapatite)
-  Cartilage: Highly suitable (excellent chondrocyte viability)
-  Skin: Suitable (used for wound dressings)
-  Neural: "[Suitable / Not Suitable]"
-  Cardiac: "[Suitable / Not Suitable]"
-  Liver: "[Suitable / Not Suitable]"
-  Lung: "[Suitable / Not Suitable]"
-  Muscle: "[Suitable / Not Suitable]"
-  Blood Vessel: "[Suitable / Not Suitable]"
-  Other Suitable Applications: 
-    - Drug delivery
-    - Cell microencapsulation
+  Supported Tissues:
+    Bone:
+      Value: "Good"
+    Cartilage:
+      Value: "Excellent"
+    Skin:
+      Value: "Excellent"
+    Cardiac:
+      Value: "Moderate"
+    Neural:
+      Value: "Moderate"
+    Liver:
+      Value: "Good"
+    Lung:
+      Value: "Moderate"
+    Kidney:
+      Value: "Moderate"
+    Vascular:
+      Value: "Good"
+  Specialized Applications:
+    Cell Encapsulation:
+      Value: "Yes"
+    Drug Delivery:
+      Value: "Yes"
+    Organoid Culture:
+      Value: "Yes"
+    Wound Healing:
+      Value: "Yes"
+    Injectable Hydrogel:
+      Value: "Yes"
+  Scientific Notes: >
+    Sodium alginate is extensively used in tissue engineering because of
+    its excellent biocompatibility, mild ionic gelation, and ability to
+    encapsulate living cells with high viability. It is particularly
+    suitable for cartilage, skin, wound healing, drug delivery, and
+    cell encapsulation. Native alginate has limited intrinsic cell
+    adhesion and is frequently combined with gelatin, collagen, or
+    extracellular matrix components for enhanced tissue regeneration.
 
 # 9. Compatibility
 Compatibility:
@@ -189,7 +598,7 @@ Optimization Guidelines:
   If shape fidelity is poor: Increase crosslinker concentration or pre-crosslink lightly before printing.
   If clogging occurs: Decrease concentration, increase nozzle diameter, or improve dissolution.
   If degradation is too fast: Use a stronger crosslinker (e.g., BaCl₂) or increase polymer concentration.
-  If degradation is too slow: Oxidize alginate or blend with rapidly degrading polymers (e.g., gelatin).
+  If degradation is too slow: Oxidize alginate and blend with rapidly degrading polymers (e.g., gelatin).
 
 # 13. Scientific References
 Scientific References:

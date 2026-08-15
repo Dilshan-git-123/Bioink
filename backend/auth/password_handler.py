@@ -16,12 +16,26 @@ def hash_password(password: str) -> str:
         raise RuntimeError(f"Error hashing password: {str(e)}")
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify that a plain-text password matches a bcrypt hash."""
-    try:
-        return bcrypt.checkpw(
-            plain_password.encode("utf-8"),
-            hashed_password.encode("utf-8"),
-        )
-    except Exception:
+def is_bcrypt_hash(hashed_password: str) -> bool:
+    """Check if a string has a valid bcrypt hash prefix."""
+    if not hashed_password:
         return False
+    return hashed_password.startswith(("$2a$", "$2b$", "$2y$"))
+
+
+def verify_password(plain_password: str, stored_password: str) -> bool:
+    """Verify that a plain-text password matches a bcrypt hash."""
+    if not plain_password or not stored_password:
+        return False
+    
+    # If stored password is a bcrypt hash
+    if is_bcrypt_hash(stored_password):
+        try:
+            return bcrypt.checkpw(
+                plain_password.encode("utf-8"),
+                stored_password.encode("utf-8"),
+            )
+        except Exception:
+            return False
+            
+    return False

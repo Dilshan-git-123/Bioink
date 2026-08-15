@@ -216,9 +216,14 @@ def db_get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 def db_get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
+    if not email:
+        return None
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, email, provider, provider_id, profile_picture, password, created_at, last_login, reset_token, reset_token_expiry FROM users WHERE email = ?", (email.lower().strip(),))
+    cursor.execute(
+        "SELECT id, name, email, provider, provider_id, profile_picture, password, created_at, last_login, reset_token, reset_token_expiry FROM users WHERE email = ? COLLATE NOCASE",
+        (email.strip(),)
+    )
     row = cursor.fetchone()
     conn.close()
     if row:
@@ -236,13 +241,15 @@ def db_update_user_last_login(user_id: str, timestamp: str):
     conn.close()
 
 def db_update_user_reset_token(email: str, reset_token: Optional[str], reset_token_expiry: Optional[str]) -> bool:
+    if not email:
+        return False
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE email = ?",
-        (reset_token, reset_token_expiry, email.lower().strip())
+        "UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE email = ? COLLATE NOCASE",
+        (reset_token, reset_token_expiry, email.strip())
     )
-    changes = conn.total_changes
+    changes = cursor.rowcount
     conn.commit()
     conn.close()
     return changes > 0
@@ -267,7 +274,7 @@ def db_update_user_password(user_id: str, hashed_password: str) -> bool:
         "UPDATE users SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?",
         (hashed_password, user_id)
     )
-    changes = conn.total_changes
+    changes = cursor.rowcount
     conn.commit()
     conn.close()
     return changes > 0

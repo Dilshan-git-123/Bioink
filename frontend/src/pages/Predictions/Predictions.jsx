@@ -1,216 +1,362 @@
-import React from 'react';
-import { 
-    FaDownload, 
-    FaShareAlt, 
-    FaChartPie, 
-    FaBrain, 
-    FaCheckCircle, 
-    FaExclamationTriangle,
-    FaVial,
-    FaTachometerAlt,
-    FaBalanceScale,
-    FaMagic
-} from 'react-icons/fa';
-import './Predictions.css';
+import React from "react";
+import {
+  FaDownload,
+  FaShareAlt,
+  FaChartPie,
+  FaBrain,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaVial,
+  FaTachometerAlt,
+  FaBalanceScale,
+  FaMagic,
+} from "react-icons/fa";
+
+import "./Predictions.css";
 
 const GaugeIndicator = ({ label, value, colorClass }) => (
-    <div className="gauge-indicator">
-        <div className="gauge-header">
-            <span className="gauge-label">{label}</span>
-            <span className={`gauge-value ${colorClass}`}>{value}%</span>
-        </div>
-        <div className="gauge-bar-bg">
-            <div className={`gauge-bar-fill ${colorClass}`} style={{ width: `${value}%` }}></div>
-        </div>
+  <div className="gauge-indicator">
+    <div className="gauge-header">
+      <span>{label}</span>
+      <span className={colorClass}>{value}%</span>
     </div>
+
+    <div className="gauge-track">
+      <div
+        className={`gauge-fill ${colorClass}`}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  </div>
 );
 
-const InsightItem = ({ title, description, type }) => {
-    const icons = {
-        success: <FaCheckCircle className="text-success" />,
-        warning: <FaExclamationTriangle className="text-warning" />,
-        info: <FaBrain className="text-info" />
-    };
-    return (
-        <div className={`insight-item type-${type}`}>
-            <div className="insight-icon">{icons[type]}</div>
-            <div className="insight-content">
-                <h5>{title}</h5>
-                <p>{description}</p>
-            </div>
+const InsightItem = ({ icon, title, description, type }) => (
+  <div className={`insight-item ${type}`}>
+    <div className="insight-icon">{icon}</div>
+
+    <div className="insight-text">
+      <h4>{title}</h4>
+      <p>{description}</p>
+    </div>
+  </div>
+);
+
+export default function Predictions() {
+  return (
+    <div className="predictions-page">
+
+      {/* ====================================================== */}
+      {/* Header */}
+      {/* ====================================================== */}
+
+      <div className="pred-header">
+
+        <div>
+          <h1>AI Prediction Analytics</h1>
+
+          <p>
+            Formulation :
+            <strong> Alginate-GelMA (BioInk Alpha v2.4)</strong>
+          </p>
         </div>
-    );
-};
 
-const Predictions = () => {
-    return (
-        <div className="predictions-page">
-            
-            {/* Header Section */}
-            <div className="pred-header">
-                <div className="pred-title-area">
-                    <h1>AI Prediction Analytics</h1>
-                    <p>Formulation: <strong>Alginate-GelMA (Bioink Alpha v2.4)</strong></p>
-                </div>
-                <div className="pred-actions">
-                    <button className="secondary-btn"><FaShareAlt /> Share</button>
-                    <button className="primary-btn"><FaDownload /> Export Report</button>
-                </div>
-            </div>
+        <div className="pred-actions">
 
-            {/* Top Metrics Row */}
-            <div className="metrics-row">
-                <div className="metric-card primary-metric">
-                    <h3>Overall Score</h3>
-                    <div className="metric-value highlight">92<span className="metric-unit">/100</span></div>
-                    <p className="metric-trend positive">Excellent printability</p>
-                </div>
-                <div className="metric-card">
-                    <h3>AI Confidence</h3>
-                    <div className="metric-value">98<span className="metric-unit">%</span></div>
-                    <p className="metric-trend neutral">Based on 12k data points</p>
-                </div>
-                <div className="metric-card status-card">
-                    <h3>Laboratory Readiness</h3>
-                    <div className="status-badge ready">
-                        <FaCheckCircle /> Ready for Print
-                    </div>
-                    <p className="status-desc">Meets all physical parameters</p>
-                </div>
-            </div>
+          <button className="secondary-btn">
+            <FaShareAlt />
+            Share
+          </button>
 
-            {/* Main Content Grid */}
-            <div className="pred-main-grid">
-                
-                {/* Left Column: Charts and Gauges */}
-                <div className="pred-left-col">
-                    <div className="pred-card">
-                        <div className="card-header">
-                            <h3><FaChartPie /> Parameter Radar</h3>
-                        </div>
-                        <div className="radar-placeholder">
-                            <div className="radar-grid-bg"></div>
-                            <p>Interactive Radar Chart Rendering...</p>
-                        </div>
-                    </div>
-
-                    <div className="pred-card">
-                        <div className="card-header">
-                            <h3><FaTachometerAlt /> Scientific Metrics</h3>
-                        </div>
-                        <div className="gauges-container">
-                            <GaugeIndicator label="Printability Score" value={95} colorClass="excellent" />
-                            <GaugeIndicator label="Cell Viability (Day 7)" value={88} colorClass="good" />
-                            <GaugeIndicator label="Structural Integrity" value={92} colorClass="excellent" />
-                            <GaugeIndicator label="Degradation Rate" value={76} colorClass="warning" />
-                            <GaugeIndicator label="Viscosity Match" value={89} colorClass="good" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column: Insights & Analysis */}
-                <div className="pred-right-col">
-                    <div className="pred-card ai-insights-card">
-                        <div className="card-header">
-                            <h3><FaBrain /> AI Insights Panel</h3>
-                        </div>
-                        <div className="insights-container">
-                            <InsightItem 
-                                type="success"
-                                title="Optimal Crosslinking Detected"
-                                description="The predicted UV exposure time of 30 seconds yields a 92% structural integrity match."
-                            />
-                            <InsightItem 
-                                type="warning"
-                                title="Slight Degradation Risk"
-                                description="Consider increasing GelMA concentration by 0.5% to slow down the degradation rate in vivo."
-                            />
-                            <InsightItem 
-                                type="info"
-                                title="Cell Viability Trend"
-                                description="Historical data suggests MSCs respond highly favorably to this exact stiffness profile (12 kPa)."
-                            />
-                        </div>
-                    </div>
-
-                    <div className="pred-card">
-                        <div className="card-header">
-                            <h3><FaVial /> Material Analysis</h3>
-                        </div>
-                        <div className="material-stats">
-                            <div className="mat-stat">
-                                <span>Yield Stress</span>
-                                <strong>150 Pa</strong>
-                            </div>
-                            <div className="mat-stat">
-                                <span>Storage Modulus (G')</span>
-                                <strong>12.4 kPa</strong>
-                            </div>
-                            <div className="mat-stat">
-                                <span>Loss Modulus (G")</span>
-                                <strong>1.8 kPa</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="pred-card optimization-card">
-                        <div className="card-header">
-                            <h3><FaMagic /> Optimization Suggestions</h3>
-                        </div>
-                        <ul className="suggestion-list">
-                            <li>Lower print bed temperature to <strong>15°C</strong> for better shape fidelity.</li>
-                            <li>Reduce printing speed by <strong>5 mm/s</strong> to eliminate under-extrusion risks.</li>
-                            <li>Add <strong>0.1% LAP</strong> photoinitiator to boost crosslinking efficiency.</li>
-                        </ul>
-                    </div>
-                </div>
-
-            </div>
-
-            {/* Bottom Section: Compare Formulations */}
-            <div className="pred-bottom-section">
-                <div className="pred-card">
-                    <div className="card-header">
-                        <h3><FaBalanceScale /> Compare Formulations</h3>
-                        <button className="text-btn">Select Baseline</button>
-                    </div>
-                    <div className="compare-table-placeholder">
-                        <table className="compare-table">
-                            <thead>
-                                <tr>
-                                    <th>Parameter</th>
-                                    <th>Current (Alpha v2.4)</th>
-                                    <th>Baseline (Standard Alg)</th>
-                                    <th>Difference</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Printability</td>
-                                    <td className="highlight-cell">95%</td>
-                                    <td>70%</td>
-                                    <td className="text-success">+25%</td>
-                                </tr>
-                                <tr>
-                                    <td>Viability</td>
-                                    <td className="highlight-cell">88%</td>
-                                    <td>85%</td>
-                                    <td className="text-success">+3%</td>
-                                </tr>
-                                <tr>
-                                    <td>Degradation</td>
-                                    <td className="highlight-cell">14 Days</td>
-                                    <td>7 Days</td>
-                                    <td className="text-info">+7 Days</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+          <button className="primary-btn">
+            <FaDownload />
+            Export Report
+          </button>
 
         </div>
-    );
-};
 
-export default Predictions;
+      </div>
+
+      {/* ====================================================== */}
+      {/* Top Cards */}
+      {/* ====================================================== */}
+
+      <div className="metrics-row">
+
+        <div className="metric-card">
+
+          <h3>Overall Score</h3>
+
+          <div className="metric-value">
+            92<span>/100</span>
+          </div>
+
+          <p>Excellent Printability</p>
+
+        </div>
+
+        <div className="metric-card">
+
+          <h3>AI Confidence</h3>
+
+          <div className="metric-value">
+            98<span>%</span>
+          </div>
+
+          <p>Based on 12,000 formulations</p>
+
+        </div>
+
+        <div className="metric-card">
+
+          <h3>Laboratory Status</h3>
+
+          <div className="ready-badge">
+
+            <FaCheckCircle />
+
+            Ready for Printing
+
+          </div>
+
+          <p>All parameters are within range.</p>
+
+        </div>
+
+      </div>
+
+      {/* ====================================================== */}
+      {/* Main Grid */}
+      {/* ====================================================== */}
+
+      <div className="pred-main-grid">
+
+        {/* LEFT */}
+
+        <div className="left-column">
+
+          <div className="pred-card">
+
+            <h2>
+              <FaChartPie />
+              Parameter Radar
+            </h2>
+
+            <div className="radar-placeholder">
+              Interactive Radar Chart
+            </div>
+
+          </div>
+
+          <div className="pred-card">
+
+            <h2>
+              <FaTachometerAlt />
+              Scientific Metrics
+            </h2>
+
+            <GaugeIndicator
+              label="Printability"
+              value={95}
+              colorClass="green"
+            />
+
+            <GaugeIndicator
+              label="Cell Viability"
+              value={88}
+              colorClass="blue"
+            />
+
+            <GaugeIndicator
+              label="Structural Integrity"
+              value={92}
+              colorClass="green"
+            />
+
+            <GaugeIndicator
+              label="Degradation Rate"
+              value={76}
+              colorClass="orange"
+            />
+
+            <GaugeIndicator
+              label="Viscosity Match"
+              value={89}
+              colorClass="blue"
+            />
+
+          </div>
+
+        </div>
+
+        {/* RIGHT */}
+
+        <div className="right-column">
+
+          <div className="pred-card">
+
+            <h2>
+              <FaBrain />
+              AI Insights
+            </h2>
+
+            <InsightItem
+              icon={<FaCheckCircle />}
+              type="success"
+              title="Optimal Crosslinking"
+              description="UV exposure of 30 seconds gives excellent structural integrity."
+            />
+
+            <InsightItem
+              icon={<FaExclamationTriangle />}
+              type="warning"
+              title="Degradation Risk"
+              description="Increasing GelMA slightly may reduce degradation."
+            />
+
+            <InsightItem
+              icon={<FaBrain />}
+              type="info"
+              title="Cell Behaviour"
+              description="Stem cells show high compatibility with this stiffness."
+            />
+
+          </div>
+
+          <div className="pred-card">
+
+            <h2>
+              <FaVial />
+              Material Analysis
+            </h2>
+
+            <div className="material-grid">
+
+              <div>
+                <small>Yield Stress</small>
+                <h3>150 Pa</h3>
+              </div>
+
+              <div>
+                <small>Storage Modulus</small>
+                <h3>12.4 kPa</h3>
+              </div>
+
+              <div>
+                <small>Loss Modulus</small>
+                <h3>1.8 kPa</h3>
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="pred-card">
+
+            <h2>
+              <FaMagic />
+              Optimization Suggestions
+            </h2>
+
+            <ul className="suggestion-list">
+
+              <li>Reduce print bed temperature to 15°C.</li>
+
+              <li>Reduce print speed by 5 mm/s.</li>
+
+              <li>Add 0.1% LAP photoinitiator.</li>
+
+            </ul>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ====================================================== */}
+      {/* Compare Table */}
+      {/* ====================================================== */}
+
+      <div className="pred-card">
+
+        <div className="pred-compare-header">
+
+          <h2>
+            <FaBalanceScale />
+            Compare Formulations
+          </h2>
+
+          <button className="secondary-btn">
+            Select Baseline
+          </button>
+
+        </div>
+
+        <div className="pred-compare-wrapper">
+
+          <table className="pred-compare-table">
+
+            <thead>
+
+              <tr>
+
+                <th>Parameter</th>
+
+                <th>Current</th>
+
+                <th>Baseline</th>
+
+                <th>Difference</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <tr>
+                <td>Printability</td>
+                <td>95%</td>
+                <td>70%</td>
+                <td className="positive">+25%</td>
+              </tr>
+
+              <tr>
+                <td>Cell Viability</td>
+                <td>88%</td>
+                <td>85%</td>
+                <td className="positive">+3%</td>
+              </tr>
+
+              <tr>
+                <td>Degradation Rate</td>
+                <td>76%</td>
+                <td>82%</td>
+                <td className="negative">-6%</td>
+              </tr>
+
+              <tr>
+                <td>Viscosity Match</td>
+                <td>89%</td>
+                <td>95%</td>
+                <td className="negative">-6%</td>
+              </tr>
+
+              <tr>
+                <td>Structural Integrity</td>
+                <td>92%</td>
+                <td>85%</td>
+                <td className="positive">+7%</td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}

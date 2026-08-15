@@ -7,58 +7,187 @@
 # ==============================================================================
 
 Knowledge Base Metadata:
+  Material ID: "MAT-[XXXX]"
   Template Version: "1.1"
   Knowledge Base Version: "1.0"
   Created By: "BioInkAI System"
-  Last Updated: "[Placeholder Date]"
-  Last Reviewed: "[Placeholder Date]"
-  Scientific Reviewer: "[Placeholder Name]"
-  Confidence Score: "[Placeholder]"
+  Last Updated: "YYYY-MM-DD"
+  Last Reviewed: "YYYY-MM-DD"
+  Scientific Reviewer: "[Reviewer Name]"
+  Confidence Score: "[0.0 - 1.0]"
   Verification Status: "Unverified"
-  Review Notes: "[Placeholder]"
+  Review Notes: "[Review Notes or N/A]"
 
 # 1. Material Information
 Material Information:
   Material Name: "[Material Name]"
   Scientific Name: "[Scientific Name]"
   Common Names: 
-    - "[Common Name]"
-  Description: "[Placeholder Description]"
-  Source: "[Source]"
-  Material Type: "[Material Type]"
-  Grade: "[Grade]"
-  CAS Number: "[Placeholder CAS]"
+    - "[Common Name 1]"
+    - "[Common Name 2]"
+  Abbreviation: "[Abbreviation]"
+  Description: "[Detailed scientific description of the material]"
+  Source: "[Natural/Synthetic/Semi-synthetic]"
+  Major Sources:
+    - "[Source 1]"
+    - "[Source 2]"
+  Material Type: "[Polymer/Ceramic/Composite/Metal/Other]"
+  Polymer Class: "[Polysaccharide/Protein/Synthetic/etc.]"
+  Origin: "[Origin]"
+  Grade: "[Research Grade/Medical Grade/Industrial Grade]"
+  CAS Number: "[XXXXXXX-XX-X]"
+  Chemical Formula: "[Chemical Formula]"
+  FDA Status: "[Approved/Unapproved/GRAS/etc.]"
+  Printable: "[Yes/No/Needs Modification]"
+  Bioink Role: "[Structural/Sacrificial/Bioactive/etc.]"
+  Commercial Availability: "[High/Medium/Low/Custom]"
+  Typical Suppliers:
+    - "[Supplier 1]"
+    - "[Supplier 2]"
 
 # 2. Physical Properties
 Physical Properties:
-  Appearance: White to yellowish-brown powder
-  Color: "[White / Yellowish-brown]"
-  Solubility: Soluble in water
-  Density: "[Placeholder] g/cm³"
-  Molecular Weight: "[Placeholder] kDa"
-  Viscosity Information: "[Placeholder] cP (Concentration dependent)"
-  Thermal Stability: Stable up to ~150°C (degrades at higher temps)
-  Storage Temperature: 2-8°C or room temperature (store dry)
-  Shelf Life: "[Placeholder] months"
-  Sterilization Method: 
-    - UV irradiation
-    - Sterile filtration (low concentration)
-    - Autoclaving (may reduce molecular weight)
+
+  General:
+    Appearance: "[Placeholder]"
+    Color: "[Placeholder]"
+    Physical State: "[Solid / Powder / Hydrogel / Liquid]"
+    Odor: "[Placeholder]"
+
+  Molecular Properties:
+    Molecular Weight:
+      Value: "[Placeholder]"
+      Unit: "kDa"
+
+    Density:
+      Value: "[Placeholder]"
+      Unit: "g/cm³"
+
+  Rheological Properties:
+    Viscosity:
+      Value: "[Placeholder]"
+      Unit: "cP"
+      Notes: "[Concentration dependent]"
+
+    Shear Thinning Behavior:
+      Present: "[Yes/No]"
+      Scientific Notes: "[Placeholder]"
+
+  Thermal Properties:
+    Thermal Stability:
+      Value: "[Placeholder]"
+      Unit: "°C"
+
+    Glass Transition Temperature:
+      Value: "[Placeholder]"
+      Unit: "°C"
+
+    Melting Point:
+      Value: "[Placeholder]"
+      Unit: "°C"
+
+  Solubility:
+
+    Water:
+      Solubility: "[Highly Soluble / Soluble / Slightly Soluble / Insoluble]"
+
+    Organic Solvents:
+      Solubility: "[Placeholder]"
+
+  Storage:
+
+    Recommended Temperature:
+      Value: "[Placeholder]"
+      Unit: "°C"
+
+    Moisture Sensitivity:
+      "[Low / Medium / High]"
+
+    Light Sensitivity:
+      "[Low / Medium / High]"
+
+    Shelf Life:
+      Value: "[Placeholder]"
+      Unit: "Months"
+
+  Sterilization:
+
+    Compatible Methods:
+      - "[Placeholder]"
+
+    Not Recommended:
+      - "[Placeholder]"
+
+  Scientific Notes:
+    "[Additional scientific observations]"
 
 # Chemical Properties
 Chemical Properties:
-  Charge: "Anionic"
-  Ionic Nature: "Polyelectrolyte"
+
+  General:
+
+    Charge:
+      Value: "[Placeholder]"
+      Notes: "[Placeholder]"
+
+    Ionic Nature:
+      Value: "[Placeholder]"
+
+    Polymer Type:
+      Value: "[Placeholder]"
+
   Functional Groups:
-    - Carboxyl groups
-    - Hydroxyl groups
-  Water Absorption: "High"
-  Hydrophilicity: "High"
-  Hydrophobicity: "Low"
-  pKa: "3.38 and 3.65 (M and G blocks)"
-  Chemical Stability: "Stable in dry, cool conditions"
-  Oxidation Sensitivity: "Low"
-  Scientific Notes: "Properties heavily depend on the M/G ratio (mannuronate to guluronate)."
+
+    Primary:
+      - "[Placeholder]"
+
+    Secondary:
+      - "[Placeholder]"
+
+  Acid Base Properties:
+
+    pKa:
+      Value: "[Placeholder]"
+
+    Recommended pH Range:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+
+  Hydration:
+
+    Water Absorption:
+      Value: "[Low / Medium / High]"
+
+    Hydrophilicity:
+      Value: "[Low / Medium / High]"
+
+    Hydrophobicity:
+      Value: "[Low / Medium / High]"
+
+  Stability:
+
+    Chemical Stability:
+      Value: "[Placeholder]"
+
+    Oxidation Sensitivity:
+      Value: "[Low / Medium / High]"
+
+    Hydrolysis Sensitivity:
+      Value: "[Low / Medium / High]"
+
+    Enzymatic Sensitivity:
+      Value: "[Placeholder]"
+
+  Crosslinking Behavior:
+
+    Crosslinkable:
+      Value: "[Yes / No]"
+
+    Crosslinking Mechanism:
+      "[Placeholder]"
+
+  Scientific Notes:
+    "[Placeholder]"
 
 # Safety Information
 Safety Information:
@@ -72,74 +201,267 @@ Safety Information:
 
 # 3. Preparation Parameters
 Preparation Parameters:
-  Recommended Concentration Range: 2-8% w/v
-  Preparation Temperature: Room temperature
-  Preparation Time: 2-4 hours
-  Mixing RPM: 500-1000
-  Hydration Time: "[Placeholder] hours"
-  Mixing Order: Slowly add powder to solvent while stirring
-  Recommended pH: 6.5-7.5
-  Buffer Used: 
-    - PBS
-    - HEPES
-    - DI Water
-  Preparation Notes: Degassing is highly recommended to remove air bubbles before printing.
+
+  Solution Preparation:
+
+    Recommended Concentration:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "% (w/v)"
+
+    Solvent:
+      Value: "[Placeholder]"
+
+    Dissolution Temperature:
+      Value: "[Placeholder]"
+      Unit: "°C"
+
+    Preparation Temperature:
+      Value: "[Placeholder]"
+      Unit: "°C"
+
+  Mixing:
+
+    Mixing Method:
+      Value: "[Magnetic Stirrer / Overhead Stirrer / Manual / Other]"
+
+    Mixing Speed:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "RPM"
+
+    Mixing Time:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "Hours"
+
+  Filtration:
+
+    Required:
+      Value: "[Yes / No]"
+
+    Filter Size:
+      Value: "[Placeholder]"
+      Unit: "µm"
+
+  Degassing:
+
+    Required:
+      Value: "[Yes / No]"
+
+    Method:
+      Value: "[Placeholder]"
+
+  Storage Before Printing:
+
+    Maximum Storage Time:
+      Value: "[Placeholder]"
+      Unit: "Hours"
+
+    Recommended Temperature:
+      Value: "[Placeholder]"
+      Unit: "°C"
+
+  Scientific Notes:
+    "[Placeholder]"
 
 # 4. Printing Properties
 Printing Properties:
-  Compatible Printing Methods:
-    - Extrusion-based
-  Recommended Printing Temperature: Room temperature (20-25°C)
-  Recommended Nozzle Gauge: 22G - 27G
-  Recommended Pressure Range: "[Placeholder] kPa"
-  Printing Speed: "[Placeholder] mm/s"
-  Shape Fidelity: High (post-crosslinking)
-  Printability Notes: Shear-thinning behavior makes it highly suitable for extrusion.
+
+  Extrusion:
+
+    Printing Temperature:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "°C"
+
+    Nozzle Gauge:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "G"
+
+    Printing Pressure:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "kPa"
+
+    Printing Speed:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "mm/s"
+
+  Printability:
+
+    Shape Fidelity:
+      Value: "[Low / Medium / High]"
+
+    Filament Formation:
+      Value: "[Poor / Moderate / Good / Excellent]"
+
+    Layer Stability:
+      Value: "[Low / Medium / High]"
+
+    Shear Recovery:
+      Value: "[Low / Medium / High]"
+
+  Post Printing:
+
+    Immediate Crosslinking Required:
+      Value: "[Yes / No]"
+
+    Recommended Crosslinker:
+      Value: "[Placeholder]"
+
+    Post Processing:
+      Value: "[Placeholder]"
+
+  Printing Compatibility:
+
+    Extrusion Bioprinting:
+      Value: "[Yes / No]"
+
+    Inkjet Printing:
+      Value: "[Yes / No]"
+
+    Laser Assisted Printing:
+      Value: "[Yes / No]"
+
+    DLP/SLA Printing:
+      Value: "[Yes / No]"
+
+  Scientific Notes:
+    "[Placeholder]"
 
 # 5. Crosslinking Information
 Crosslinking Information:
-  Compatible Crosslinkers:
-    - CaCl₂
-    - BaCl₂
-    - CaSO₄
-  Incompatible Crosslinkers:
-    - "[List incompatible crosslinkers]"
-  Crosslinking Mechanism: Ionic crosslinking via divalent cations (egg-box model).
-  Recommended Crosslinker Concentration: 50-100 mM (for CaCl₂)
-  Crosslinking Time: "[Placeholder] minutes"
-  Scientific Notes: Barium crosslinks more strongly than calcium, but toxicity must be considered for live cells.
+  Crosslinking Capability:
+    Crosslinkable:
+      Value: "[Yes / No]"
+    Crosslinking Type:
+      Value: "[Ionic / Thermal / Photo / Chemical / Enzymatic]"
+  Primary Crosslinker:
+    Name:
+      Value: "[Placeholder]"
+    Recommended Concentration:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "% (w/v)"
+  Crosslinking Conditions:
+    Temperature:
+      Value: "[Placeholder]"
+      Unit: "°C"
+    Time:
+      Minimum: "[Placeholder]"
+      Maximum: "[Placeholder]"
+      Unit: "minutes"
+    pH:
+      Value: "[Placeholder]"
+    Scientific Notes:
+      Value: "[Placeholder]"
 
 # 6. Biological Properties
 Biological Properties:
-  Cell Adhesion: Poor (lacks mammalian cell adhesion motifs like RGD)
-  Cell Viability: High (typically >90%)
-  Biocompatibility: Excellent
-  Biodegradability: Slow in mammals (lacks alginate lyase)
-  Cytotoxicity: None
-  Immunogenicity: Low (if highly purified)
+  Biocompatibility:
+    Overall Rating:
+      Value: "[Excellent / Good / Moderate / Poor]"
+    ISO 10993 Status:
+      Value: "[Placeholder]"
+  Cell Interaction:
+    Cell Adhesion:
+      Value: "[Excellent / Good / Moderate / Poor]"
+    Cell Proliferation:
+      Value: "[Excellent / Good / Moderate / Poor]"
+    Cell Viability:
+      Value: "[Excellent / Good / Moderate / Poor]"
+  Biodegradation:
+    Biodegradable:
+      Value: "[Yes / No]"
+    Degradation Mechanism:
+      Value: "[Placeholder]"
+    Degradation Rate:
+      Value: "[Slow / Moderate / Fast]"
+  Immunological Response:
+    Immunogenicity:
+      Value: "[Low / Moderate / High]"
+    Cytotoxicity:
+      Value: "[None / Low / Moderate / High]"
+    Inflammatory Response:
+      Value: "[Low / Moderate / High]"
+  Bioactivity:
+    Supports Cell Encapsulation:
+      Value: "[Yes / No]"
+    Supports Tissue Regeneration:
+      Value: "[Yes / No]"
+    Growth Factor Binding:
+      Value: "[Low / Moderate / High]"
+  Scientific Notes:
+    "[Placeholder]"
 
 # 7. Mechanical Properties
 Mechanical Properties:
-  Elastic Modulus: "[Placeholder] kPa"
-  Compressive Strength: "[Placeholder] kPa"
-  Tensile Strength: "[Placeholder] MPa"
-  Swelling Behaviour: High swelling in aqueous environments
-  Stability: Gradually loses stiffness in physiological solutions due to ion exchange.
-
+  Elastic Properties:
+    Elastic Modulus:
+      Value: "[Placeholder]"
+      Unit: "kPa"
+    Youngs Modulus:
+      Value: "[Placeholder]"
+      Unit: "kPa"
+  Strength:
+    Tensile Strength:
+      Value: "[Placeholder]"
+      Unit: "kPa"
+    Compressive Strength:
+      Value: "[Placeholder]"
+      Unit: "kPa"
+  Rheology:
+    Shear Thinning:
+      Value: "[Yes / No]"
+    Yield Stress:
+      Value: "[Placeholder]"
+      Unit: "Pa"
+    Shape Fidelity:
+      Value: "[Low / Moderate / High]"
+  Stability:
+    Swelling Ratio:
+      Value: "[Placeholder]"
+    Structural Stability:
+      Value: "[Low / Moderate / High]"
+  Scientific Notes:
+    "[Placeholder]"
 # 8. Tissue Engineering Applications
 Tissue Engineering Applications:
-  Bone: Suitable (often combined with hydroxyapatite)
-  Cartilage: Highly suitable (excellent chondrocyte viability)
-  Skin: Suitable (used for wound dressings)
-  Neural: "[Suitable / Not Suitable]"
-  Cardiac: "[Suitable / Not Suitable]"
-  Liver: "[Suitable / Not Suitable]"
-  Lung: "[Suitable / Not Suitable]"
-  Muscle: "[Suitable / Not Suitable]"
-  Blood Vessel: "[Suitable / Not Suitable]"
-  Other Suitable Applications: 
-    - Drug delivery
-    - Cell microencapsulation
+  Supported Tissues:
+    Bone:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Cartilage:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Skin:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Cardiac:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Neural:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Liver:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Lung:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Kidney:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+    Vascular:
+      Value: "[Excellent / Good / Moderate / Poor / Not Recommended]"
+  Specialized Applications:
+    Cell Encapsulation:
+      Value: "[Yes / No]"
+    Drug Delivery:
+      Value: "[Yes / No]"
+    Organoid Culture:
+      Value: "[Yes / No]"
+    Wound Healing:
+      Value: "[Yes / No]"
+    Injectable Hydrogel:
+      Value: "[Yes / No]"
+  Scientific Notes: >
+    [Placeholder]
 
 # 9. Compatibility
 Compatibility:

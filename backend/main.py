@@ -1,33 +1,32 @@
-import os
-import re
-import datetime
-import uuid
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
-from auth.auth_routes import router as auth_router, get_current_user
+"""
+FastAPI integration layer for BioInkAI Prediction Engine.
+Provides health, version, material, project CRUD, tissue recommendation, and prediction endpoints.
+"""
 
-from predictor import predict_bioink
-from validator import validate_bioink
-from protocol_generator import generate_protocol
-from optimizer import optimize_bioink
-from tissue_engine import recommend_tissue
-from suggestion_engine import generate_suggestions
-from optimization_report import generate_optimization_report
-from migration_engine import run_migration_engine, preview_migration_engine, get_migration_logs, restore_backup, get_backups_list
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional, Union
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+
+# Core prediction engine – do not modify.
+from prediction_engine.predictor import PredictionEngine
+
+# Knowledge Engine utilities – reuse existing loader and profile builder.
+from knowledge_engine.loader import loader as knowledge_loader
+from knowledge_engine.profile_builder import ProfileBuilder
+
+# Authentication & DB imports
+from auth.auth_routes import router as auth_router
 from database import (
     init_db,
     db_create_project,
     db_get_projects,
     db_get_project_by_id,
     db_update_project,
-    db_delete_project
-)
-from schemas.experiment import (
-    ExperimentCreate,
-    ExperimentRead,
-    ExperimentUpdate
+    db_delete_project,
 )
 from experiment_db import (
     db_create_experiment,
@@ -37,530 +36,350 @@ from experiment_db import (
     db_delete_experiment,
     db_duplicate_experiment,
 )
+from schemas.experiment import (
+    ExperimentCreate,
+    ExperimentUpdate,
+    ExperimentRead,
+)
 
+init_db()
 
-app = FastAPI(title="BioInkAI API")
+app = FastAPI(
+    title="BioInkAI API",
+    version="1.0.0",
+    description="Scientific Bioink Prediction Engine",
+)
+
 app.include_router(auth_router)
 
-@app.on_event("startup")
-def startup_event():
-    init_db()
-
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ------------------------------------------------
-# Reusable Pydantic Models
-# ------------------------------------------------
+# -------------------------------------------------------------------
+# Pydantic models — typed to match the current Designer.jsx payload
+# -------------------------------------------------------------------
 
-class Material(BaseModel):
-    """A single biomaterial with its preparation parameters."""
-    biomaterial: str
-    concentration: float
-    temperature: float
-    rpm: float
-    time: float
-    method: str
+class MaterialInput(BaseModel):
+    """Single biomaterial entry as sent by Designer.jsx."""
+    biomaterial: str = Field(..., description="Biomaterial name, e.g. 'alginate'")
+    concentration: float = Field(..., description="Concentration in % w/v")
+    temperature: float = Field(..., description="Preparation temperature in °C")
+    rpm: float = Field(..., description="Mixing speed in RPM")
+    time: float = Field(..., description="Mixing time in minutes")
+    method: str = Field(..., description="Preparation method, e.g. 'ionic'")
 
+class FinalMixingInput(BaseModel):
+    """Final mixing / crosslinking step as sent by Designer.jsx."""
+    temperature: float = Field(..., description="Final mixing temperature in °C")
+    rpm: float = Field(..., description="Final mixing speed in RPM")
+    time: float = Field(..., description="Final mixing time in minutes")
+    crosslinking: str = Field(..., description="Crosslinking method, e.g. 'CaCl2'")
 
-class FinalMixing(BaseModel):
-    """Parameters for the final mixing / crosslinking step."""
-    temperature: float
-    rpm: float
-    time: float
-    crosslinking: str
-
-
-class BioinkRequest(BaseModel):
-    """Top-level request: tissue target, list of materials, final mixing."""
-    tissue: str
-    materials: List[Material]
-    finalMixing: FinalMixing
-
-
-class ProjectResponse(BaseModel):
-    id: str
-    name: str
-    description: Optional[str] = ""
-    tissue_type: Optional[str] = ""
-    biomaterial_formulation: Optional[List[dict]] = []
-    final_mixing_parameters: Optional[dict] = {}
-    prediction_results: Optional[dict] = {}
-    generated_protocol: Optional[dict] = {}
-    created_date: str
-    last_modified_date: str
-    status: str
-
+class DesignerPredictionRequest(BaseModel):
+    """Root prediction payload exactly matching the current Designer.jsx structure."""
+    tissue: str = Field(..., description="Target tissue type, e.g. 'Cartilage'")
+    materials: List[MaterialInput] = Field(..., min_items=1, description="List of biomaterials")
+    finalMixing: FinalMixingInput = Field(..., description="Final mixing parameters")
 
 class ProjectCreate(BaseModel):
+    """Payload for creating a new project."""
     name: str
     description: Optional[str] = ""
     tissue_type: Optional[str] = ""
-    biomaterial_formulation: Optional[List[dict]] = []
-    final_mixing_parameters: Optional[dict] = {}
-    prediction_results: Optional[dict] = {}
-    generated_protocol: Optional[dict] = {}
-    status: Optional[str] = "Draft"
-
+    biomaterial_formulation: List[Dict[str, Any]] = Field(default_factory=list)
+    final_mixing_parameters: Dict[str, Any] = Field(default_factory=dict)
+    prediction_results: Dict[str, Any] = Field(default_factory=dict)
+    generated_protocol: Dict[str, Any] = Field(default_factory=dict)
+    status: str = "Draft"
+    created_date: Optional[str] = None
+    last_modified_date: Optional[str] = None
 
 class ProjectUpdate(BaseModel):
+    """Payload for partially updating an existing project (all fields optional)."""
     name: Optional[str] = None
     description: Optional[str] = None
     tissue_type: Optional[str] = None
-    biomaterial_formulation: Optional[List[dict]] = None
-    final_mixing_parameters: Optional[dict] = None
-    prediction_results: Optional[dict] = None
-    generated_protocol: Optional[dict] = None
+    biomaterial_formulation: Optional[List[Dict[str, Any]]] = None
+    final_mixing_parameters: Optional[Dict[str, Any]] = None
+    prediction_results: Optional[Dict[str, Any]] = None
+    generated_protocol: Optional[Dict[str, Any]] = None
     status: Optional[str] = None
 
-
-
-# ------------------------------------------------
-# Root
-# ------------------------------------------------
-
-@app.get("/")
-def root():
+# -------------------------------------------------------------------
+# Health endpoint
+# -------------------------------------------------------------------
+@app.get("/health")
+def health_check() -> Dict[str, str]:
+    """Simple health probe returning static status information."""
     return {
-        "message": "Welcome to BioInkAI Backend"
+        "status": "healthy",
+        "engine": "BioInkAI Prediction Engine",
+        "version": "1.0.0",
     }
 
+# -------------------------------------------------------------------
+# Version endpoint
+# -------------------------------------------------------------------
+@app.get("/version")
+def version_info() -> Dict[str, str]:
+    """Return application version metadata."""
+    return {
+        "application": "BioInkAI",
+        "version": "1.0.0",
+        "backend": "Prediction Engine",
+        "status": "stable",
+    }
 
-# ------------------------------------------------
-# Prediction Endpoint
-# ------------------------------------------------
+# -------------------------------------------------------------------
+# Materials listing endpoint
+# -------------------------------------------------------------------
+@app.get("/materials")
+def list_materials() -> List[str]:
+    """List all available biomaterial names from the knowledge base.
+    The list is derived from the YAML files present in the knowledge base
+    rather than being hard‑coded.
+    """
+    materials_dir = knowledge_loader.base_path / "materials"
+    if not materials_dir.is_dir():
+        raise HTTPException(status_code=500, detail="Materials directory not found.")
+    return [p.stem for p in materials_dir.iterdir() if p.suffix == ".yaml"]
 
+# -------------------------------------------------------------------
+# Material profile endpoint
+# -------------------------------------------------------------------
+@app.get("/materials/{material_name}")
+def get_material_profile(material_name: str) -> Dict[str, Any]:
+    """Load a material profile and return its standardized representation.
+    Raises:
+        HTTPException 404 – if the material does not exist in the knowledge base.
+    """
+    try:
+        raw_material = knowledge_loader.load_material(material_name)
+    except Exception as exc:
+        raise HTTPException(status_code=404, detail=f"Material '{material_name}' not found.") from exc
+    profile = ProfileBuilder.build(raw_material)
+    return profile
+
+# -------------------------------------------------------------------
+# Prediction example endpoint
+# -------------------------------------------------------------------
+@app.get("/prediction/example")
+def prediction_example() -> Dict[str, Any]:
+    """Provide a minimal example payload for the ``/predict`` endpoint."""
+    return {
+        "material": "alginate",
+        "concentration": 3.0,
+        "temperature": 25,
+        "target_tissue": "cartilage",
+    }
+
+# -------------------------------------------------------------------
+# Knowledge status endpoint
+# -------------------------------------------------------------------
+@app.get("/knowledge/status")
+def knowledge_status() -> Dict[str, Any]:
+    """Report basic health of the knowledge base and prediction engine."""
+    materials_dir = knowledge_loader.base_path / "materials"
+    material_count = len([p for p in materials_dir.iterdir() if p.suffix == ".yaml"]) if materials_dir.is_dir() else 0
+    return {
+        "knowledge_base": "loaded",
+        "materials_available": material_count,
+        "prediction_engine": "ready",
+    }
+
+# -------------------------------------------------------------------
+# Prediction endpoint — accepts the current Designer.jsx payload structure
+# -------------------------------------------------------------------
 @app.post("/predict")
-def predict(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
+def predict(request: DesignerPredictionRequest) -> Dict[str, Any]:
+    """Accept the full Designer payload and forward it to PredictionEngine.
 
-    # ----------------------------------------------------------
-    # Step 1: Validate every material
-    # ----------------------------------------------------------
-
-    all_errors = []
-    all_warnings = []
-
-    final_mixing = (
-        data.finalMixing.model_dump()
-        if data.finalMixing
-        else {}
-    )
-
-    for mat in data.materials:
-
-        result = validate_bioink(
-            biomaterial=mat.biomaterial,
-            concentration=mat.concentration,
-            preparation_temperature=mat.temperature,
-            final_mixing_temperature=final_mixing.get("temperature"),
-            mixing_rpm=mat.rpm,
-            mixing_time=mat.time,
-            crosslinking_method=final_mixing.get("crosslinking"),
+    The payload is converted to a structured dict so PredictionEngine can
+    handle multiple materials, finalMixing, and tissue without losing data.
+    """
+    # Build a normalised dict that PredictionEngine.predict() can consume
+    payload = {
+        "tissue": request.tissue,
+        "materials": [
+            {
+                "biomaterial": m.biomaterial,
+                "concentration": m.concentration,
+                "temperature": m.temperature,
+                "rpm": m.rpm,
+                "time": m.time,
+                "method": m.method,
+            }
+            for m in request.materials
+        ],
+        "finalMixing": {
+            "temperature": request.finalMixing.temperature,
+            "rpm": request.finalMixing.rpm,
+            "time": request.finalMixing.time,
+            "crosslinking": request.finalMixing.crosslinking,
+        },
+    }
+    engine = PredictionEngine()
+    try:
+        return engine.predict(payload)
+    except ValueError as exc:
+        # Validation errors from the engine surface as 422
+        raise HTTPException(status_code=422, detail=str(exc))
+    except FileNotFoundError as exc:
+        # Missing material profiles → 404
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail={"success": False, "error": str(exc)}
         )
 
-        all_errors.extend(result.get("errors", []))
-        all_warnings.extend(result.get("warnings", []))
+# -------------------------------------------------------------------
+# Projects CRUD endpoints
+# -------------------------------------------------------------------
 
-    # Return immediately if validation fails
-
-    if all_errors:
-        return {
-            "valid": False,
-            "errors": all_errors,
-            "warnings": all_warnings,
-        }
-
-    # ----------------------------------------------------------
-    # Step 2: Run Prediction
-    # ----------------------------------------------------------
-
-    materials = [mat.model_dump() for mat in data.materials]
-
-    prediction = predict_bioink(
-        materials,
-        final_mixing
-    )
-
-    # ----------------------------------------------------------
-    # Step 3: Generate Optimization Report
-    # ----------------------------------------------------------
-
-    optimization_report = generate_optimization_report(
-        materials,
-        prediction
-    )
-
-    prediction["optimization_report"] = optimization_report
-
-    # ----------------------------------------------------------
-    # Step 4: Generate Intelligent Suggestions
-    # ----------------------------------------------------------
-
-    suggestions = generate_suggestions(prediction)
-
-    prediction["suggestions"] = suggestions["suggestions"]
-
-    return prediction
+def _utcnow() -> str:
+    """Return the current UTC time as an ISO-8601 string."""
+    return datetime.now(timezone.utc).isoformat()
 
 
-# ------------------------------------------------
-# AI Optimization Engine
-# ------------------------------------------------
-
-@app.post("/optimize")
-def optimize(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
-
-    materials = [mat.model_dump() for mat in data.materials]
-
-    final_mixing = (
-        data.finalMixing.model_dump()
-        if data.finalMixing
-        else {}
-    )
-
-    result = optimize_bioink(
-        materials,
-        final_mixing
-    )
-
-    return result
+@app.post("/projects", status_code=status.HTTP_201_CREATED)
+def create_project(project: ProjectCreate) -> Dict[str, Any]:
+    """Create a new project and persist it to SQLite."""
+    now = _utcnow()
+    proj_dict = project.dict()
+    proj_dict["id"] = str(uuid.uuid4())
+    proj_dict["created_date"] = proj_dict["created_date"] or now
+    proj_dict["last_modified_date"] = proj_dict["last_modified_date"] or now
+    return db_create_project(proj_dict)
 
 
-# ------------------------------------------------
-# Protocol Generator
-# ------------------------------------------------
-
-@app.post("/protocol")
-def protocol(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
-
-    materials = [mat.model_dump() for mat in data.materials]
-
-    final_mixing = (
-        data.finalMixing.model_dump()
-        if data.finalMixing
-        else {}
-    )
-
-    protocol_data = generate_protocol(
-        materials,
-        final_mixing,
-        data.tissue
-    )
-
-    return protocol_data
-
-
-# ------------------------------------------------
-# Tissue Recommendation
-# ------------------------------------------------
-
-@app.get("/tissue/{tissue_name}")
-def get_tissue_recommendation(tissue_name: str, current_user: dict = Depends(get_current_user)):
-
-    recommendation = recommend_tissue(tissue_name)
-
-    if recommendation:
-        return recommendation
-
-    return {
-        "message": "No recommendation available for this tissue."
-    }
-
-
-# ------------------------------------------------
-# Literature Database
-# ------------------------------------------------
-
-LITERATURE_DB = {
-
-    "alginate": {
-        "title": "Alginate-based bioinks for 3D bioprinting applications",
-        "authors": "Axpe E, Oyen ML",
-        "year": "2020",
-        "doi": "10.1016/j.biomaterials.2020.120016"
-    },
-
-    "gelatin": {
-        "title": "The Bioink: A comprehensive review on bioprintable materials",
-        "authors": "Hospodiuk M et al.",
-        "year": "2017",
-        "doi": "10.1016/j.biomaterials.2017.03.006"
-    },
-
-    "pluronic": {
-        "title": "Pluronic F127-based bioinks in tissue engineering",
-        "authors": "Müller M et al.",
-        "year": "2015",
-        "doi": "10.1002/adhm.201500123"
-    }
-
-}
-
-
-# ------------------------------------------------
-# Literature Recommendation
-# ------------------------------------------------
-
-@app.post("/literature")
-def literature_recommendation(data: BioinkRequest, current_user: dict = Depends(get_current_user)):
-
-    papers = []
-
-    for mat in data.materials:
-
-        key = mat.biomaterial.lower()
-
-        if key in LITERATURE_DB and mat.concentration > 0:
-            papers.append(LITERATURE_DB[key])
-
-    return {
-        "papers": papers
-    }
-
-
-# ------------------------------------------------
-# Project Management
-# ------------------------------------------------
-
-@app.post("/projects", response_model=ProjectResponse)
-def create_project(data: ProjectCreate, current_user: dict = Depends(get_current_user)):
-    project_id = str(uuid.uuid4())
-    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
-    project = {
-        "id": project_id,
-        "name": data.name,
-        "description": data.description or "",
-        "tissue_type": data.tissue_type or "",
-        "biomaterial_formulation": data.biomaterial_formulation or [],
-        "final_mixing_parameters": data.final_mixing_parameters or {},
-        "prediction_results": data.prediction_results or {},
-        "generated_protocol": data.generated_protocol or {},
-        "created_date": now,
-        "last_modified_date": now,
-        "status": data.status or "Draft"
-    }
-    created = db_create_project(project)
-    return created
-
-
-@app.get("/projects", response_model=List[ProjectResponse])
-def get_projects(current_user: dict = Depends(get_current_user)):
+@app.get("/projects")
+def get_projects() -> List[Any]:
+    """Return all persisted projects from SQLite."""
     return db_get_projects()
 
 
-@app.get("/projects/{project_id}", response_model=ProjectResponse)
-def get_project(project_id: str, current_user: dict = Depends(get_current_user)):
+@app.get("/projects/{project_id}")
+def get_project(project_id: str) -> Dict[str, Any]:
+    """Return a single project by its string UUID."""
     project = db_get_project_by_id(project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
 
 
-@app.put("/projects/{project_id}", response_model=ProjectResponse)
-def update_project_endpoint(project_id: str, data: ProjectUpdate, current_user: dict = Depends(get_current_user)):
-    project = db_get_project_by_id(project_id)
-    if not project:
+@app.put("/projects/{project_id}")
+def update_project(project_id: str, project: ProjectUpdate) -> Dict[str, Any]:
+    """Partially update a project; only supplied fields are changed."""
+    existing = db_get_project_by_id(project_id)
+    if not existing:
         raise HTTPException(status_code=404, detail="Project not found")
-    
-    # Filter out None updates
-    updates = {}
-    for key, val in data.model_dump(exclude_unset=True).items():
-        if val is not None:
-            updates[key] = val
-            
-    updates["last_modified_date"] = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
+    # Build dict of only the fields that were explicitly provided
+    updates = {k: v for k, v in project.dict().items() if v is not None}
+    # Always stamp the modification time
+    updates["last_modified_date"] = _utcnow()
     updated = db_update_project(project_id, updates)
     return updated
 
 
 @app.delete("/projects/{project_id}")
-def delete_project_endpoint(project_id: str, current_user: dict = Depends(get_current_user)):
-    deleted = db_delete_project(project_id)
-    if not deleted:
+def delete_project(project_id: str) -> Dict[str, Any]:
+    """Delete a project by its string UUID."""
+    existing = db_get_project_by_id(project_id)
+    if not existing:
         raise HTTPException(status_code=404, detail="Project not found")
+    db_delete_project(project_id)
     return {"success": True}
 
-
-# ------------------------------------------------
-# Material Generator
-# ------------------------------------------------
-
-class MaterialGenerateRequest(BaseModel):
-    materialName: str
-    scientificName: str
-    commonName: str
-    materialType: str
-    source: str
-    grade: str
-
-@app.post("/materials/generate")
-def generate_material(data: MaterialGenerateRequest, current_user: dict = Depends(get_current_user)):
-    # Validation
-    if not data.materialName.strip():
-        raise HTTPException(status_code=400, detail="Material name cannot be empty.")
-    
-    # Filename conversion
-    base_name = data.materialName.strip().lower()
-    safe_name = re.sub(r'[^a-z0-9\s-]', '', base_name)
-    safe_name = re.sub(r'[\s-]+', '_', safe_name)
-    
-    if not safe_name:
-        raise HTTPException(status_code=400, detail="Invalid material name.")
-        
-    filename = f"{safe_name}.yaml"
-    
-    kb_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'knowledge_base'))
-    template_path = os.path.join(kb_path, 'master', 'material_template.yaml')
-    output_path = os.path.join(kb_path, 'materials', filename)
-    
-    if os.path.exists(output_path):
-        raise HTTPException(status_code=400, detail="A material with this name already exists.")
-        
-    if not os.path.exists(template_path):
-        raise HTTPException(status_code=500, detail="Master template not found.")
-        
-    with open(template_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-        
-    # Replace placeholders
-    content = content.replace('"[Material Name]"', data.materialName.strip())
-    content = content.replace('"[Scientific Name]"', data.scientificName.strip())
-    content = content.replace('"[Common Name]"', data.commonName.strip() or data.materialName.strip())
-    content = content.replace('"[Material Type]"', data.materialType.strip())
-    content = content.replace('"[Source]"', data.source.strip())
-    content = content.replace('"[Grade]"', data.grade.strip() or "Standard")
-    
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(content)
-        
-    try:
-        # Automatically open the generated YAML file using the OS default application
-        os.startfile(output_path)
-    except Exception as e:
-        print(f"Could not open file automatically: {e}")
-        
+# -------------------------------------------------------------------
+# Tissue recommendation endpoint
+# -------------------------------------------------------------------
+@app.get("/tissue/{tissue_name}")
+def get_tissue(tissue_name: str) -> Dict[str, Any]:
+    """Return tissue recommendation information using the knowledge base."""
+    tissue_data = knowledge_loader.get_tissue(tissue_name)
+    if not tissue_data:
+        raise HTTPException(status_code=404, detail="Tissue not found")
     return {
-        "success": True,
-        "filename": filename,
-        "material_name": data.materialName.strip(),
-        "creation_time": datetime.datetime.now().isoformat()
+        "tissue": tissue_name,
+        "recommended_materials": tissue_data.get("recommended_materials", []),
+        "recommended_temperature": tissue_data.get("recommended_temperature"),
+        "recommended_crosslinking": tissue_data.get("recommended_crosslinking", ""),
     }
 
-# ------------------------------------------------
-# Knowledge Base Migration Engine
-# ------------------------------------------------
 
-@app.get("/migration/preview")
-def preview_migration(current_user: dict = Depends(get_current_user)):
-    return preview_migration_engine()
-
-@app.post("/migration/run")
-def run_migration(current_user: dict = Depends(get_current_user)):
-    return run_migration_engine()
-
-@app.get("/migration/logs")
-def migration_logs(current_user: dict = Depends(get_current_user)):
-    return get_migration_logs()
-
-@app.get("/migration/backups")
-def migration_backups(current_user: dict = Depends(get_current_user)):
-    return get_backups_list()
-
-class RestoreRequest(BaseModel):
-    backup_filename: str
-
-@app.post("/migration/restore")
-def restore_migration(data: RestoreRequest, current_user: dict = Depends(get_current_user)):
-    result = restore_backup(data.backup_filename)
-    if not result.get("success"):
-        raise HTTPException(status_code=400, detail=result.get("error"))
-    return result
+# -------------------------------------------------------------------
+# Experiments CRUD endpoints
+# -------------------------------------------------------------------
+@app.post("/experiments", status_code=status.HTTP_201_CREATED, response_model=ExperimentRead)
+def create_experiment(experiment: ExperimentCreate) -> Dict[str, Any]:
+    """Create a new experiment record in the database."""
+    exp_dict = experiment.dict()
+    exp_dict["id"] = str(uuid.uuid4())
+    exp_dict["timestamp"] = _utcnow()
+    try:
+        created = db_create_experiment(exp_dict)
+        if not created:
+            raise HTTPException(status_code=500, detail="Failed to create experiment")
+        return created
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-# ------------------------------------------------
-# Experiment History
-# ------------------------------------------------
-
-class ExperimentCreateRequest(BaseModel):
-    project_id: str
-    project_name: str
-    tissue_type: Optional[str] = None
-    biomaterials: Optional[Any] = None
-    final_mixing: Optional[Any] = None
-    prediction_results: Optional[Any] = None
-    compatibility_analysis: Optional[Any] = None
-    generated_protocol: Optional[str] = None
-    user_notes: Optional[str] = None
-    is_favorite: Optional[bool] = False
-
-
-class ExperimentUpdateRequest(BaseModel):
-    user_notes: Optional[str] = None
-    is_favorite: Optional[bool] = None
-
-
-@app.post("/experiments")
-def create_experiment(data: ExperimentCreateRequest, current_user: dict = Depends(get_current_user)):
-    exp_id = str(uuid.uuid4())
-    now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30))).isoformat()
-    exp = {
-        "id": exp_id,
-        "timestamp": now,
-        "project_id": data.project_id,
-        "project_name": data.project_name,
-        "tissue_type": data.tissue_type,
-        "biomaterials": data.biomaterials,
-        "final_mixing": data.final_mixing,
-        "prediction_results": data.prediction_results,
-        "compatibility_analysis": data.compatibility_analysis,
-        "generated_protocol": data.generated_protocol,
-        "user_notes": data.user_notes,
-        "is_favorite": data.is_favorite or False,
-    }
-    created = db_create_experiment(exp)
-    return created
-
-
-@app.get("/experiments")
-def list_experiments(current_user: dict = Depends(get_current_user)):
+@app.get("/experiments", response_model=List[ExperimentRead])
+def get_experiments() -> List[Dict[str, Any]]:
+    """Return all experiments from the database."""
     return db_get_experiments()
 
 
-@app.get("/experiments/{experiment_id}")
-def get_experiment(experiment_id: str, current_user: dict = Depends(get_current_user)):
-    exp = db_get_experiment_by_id(experiment_id)
-    if not exp:
+@app.get("/experiments/{experiment_id}", response_model=ExperimentRead)
+def get_experiment(experiment_id: str) -> Dict[str, Any]:
+    """Return a single experiment by its ID."""
+    experiment = db_get_experiment_by_id(experiment_id)
+    if not experiment:
         raise HTTPException(status_code=404, detail="Experiment not found")
-    return exp
+    return experiment
 
 
-@app.put("/experiments/{experiment_id}")
-def update_experiment(experiment_id: str, data: ExperimentUpdateRequest, current_user: dict = Depends(get_current_user)):
-    exp = db_get_experiment_by_id(experiment_id)
-    if not exp:
+@app.put("/experiments/{experiment_id}", response_model=ExperimentRead)
+def update_experiment(experiment_id: str, experiment: ExperimentUpdate) -> Dict[str, Any]:
+    """Partially update an experiment (notes or favorite status)."""
+    existing = db_get_experiment_by_id(experiment_id)
+    if not existing:
         raise HTTPException(status_code=404, detail="Experiment not found")
-    updates = {k: v for k, v in data.model_dump(exclude_unset=True).items() if v is not None}
+    updates = {k: v for k, v in experiment.dict().items() if v is not None}
     updated = db_update_experiment(experiment_id, updates)
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to update experiment")
     return updated
 
 
 @app.delete("/experiments/{experiment_id}")
-def delete_experiment(experiment_id: str, current_user: dict = Depends(get_current_user)):
-    deleted = db_delete_experiment(experiment_id)
-    if not deleted:
+def delete_experiment(experiment_id: str) -> Dict[str, Any]:
+    """Delete an experiment by its ID."""
+    existing = db_get_experiment_by_id(experiment_id)
+    if not existing:
         raise HTTPException(status_code=404, detail="Experiment not found")
-    return {"success": True}
+    success = db_delete_experiment(experiment_id)
+    return {"success": success}
 
 
-@app.post("/experiments/{experiment_id}/duplicate")
-def duplicate_experiment(experiment_id: str, current_user: dict = Depends(get_current_user)):
+@app.post("/experiments/{experiment_id}/duplicate", response_model=ExperimentRead)
+def duplicate_experiment(experiment_id: str) -> Dict[str, Any]:
+    """Duplicate an experiment by its ID, creating a new record with a fresh UUID."""
+    existing = db_get_experiment_by_id(experiment_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Experiment not found")
     duplicated = db_duplicate_experiment(experiment_id)
     if not duplicated:
-        raise HTTPException(status_code=404, detail="Experiment not found")
+        raise HTTPException(status_code=500, detail="Failed to duplicate experiment")
     return duplicated

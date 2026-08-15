@@ -57,8 +57,9 @@ class TestProjectsAPI(unittest.TestCase):
         }
         
         status, data = self.send_request("POST", "/projects", payload)
-        self.assertEqual(status, 200)
+        self.assertEqual(status, 201)
         self.assertIsNotNone(data.get("id"))
+        self.assertIsInstance(data["id"], str)  # UUID string, not integer
         self.assertEqual(data["name"], payload["name"])
         self.assertEqual(data["status"], "Draft")
         self.assertIsNotNone(data.get("created_date"))

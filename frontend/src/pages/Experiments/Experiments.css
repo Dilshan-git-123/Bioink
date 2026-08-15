@@ -704,7 +704,7 @@
     padding: 32px;
 }
 
-.compare-table {
+.compare-panel .compare-table {
     display: grid;
     grid-template-columns: 180px 1fr 1fr;
     gap: 0;

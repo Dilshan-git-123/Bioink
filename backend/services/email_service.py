@@ -26,12 +26,11 @@ def send_reset_email(email: str, reset_token: str) -> None:
         ValueError:   If required environment variables are missing.
         RuntimeError: If the email fails to send.
     """
-    if not EMAIL_ADDRESS:
-        raise ValueError("EMAIL_ADDRESS is not set in the environment.")
-    if not EMAIL_PASSWORD:
-        raise ValueError("EMAIL_PASSWORD is not set in the environment.")
-
     reset_url = f"{FRONTEND_URL}/reset-password?token={reset_token}"
+
+    if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
+        print(f"[email_service] SMTP credentials not set in environment. Password reset URL for {email}: {reset_url}")
+        return
 
     # ── Build the message ────────────────────────────────────────────────────
     message = MIMEMultipart("alternative")

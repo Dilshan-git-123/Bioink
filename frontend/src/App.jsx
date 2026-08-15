@@ -22,6 +22,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { getCurrentUser, isAuthenticated } from "./services/authService";
 import "./styles/layout.css";
 
+
 function App() {
   const [appInitializing, setAppInitializing] = useState(true);
 
