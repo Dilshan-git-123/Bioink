@@ -13,10 +13,15 @@ from pathlib import Path
 
 # Core prediction engine – do not modify.
 from prediction_engine.predictor import PredictionEngine
+from protocol_generator import generate_protocol, generate_reference_protocol
 
 # Knowledge Engine utilities – reuse existing loader and profile builder.
 from knowledge_engine.loader import loader as knowledge_loader
 from knowledge_engine.profile_builder import ProfileBuilder
+
+# Literature retrieval layer
+from literature.literature_service import retrieve_literature, build_queries
+from literature.evidence_builder import build_literature_reference_protocol
 
 # Authentication & DB imports
 from auth.auth_routes import router as auth_router
@@ -241,6 +246,130 @@ def predict(request: DesignerPredictionRequest) -> Dict[str, Any]:
             status_code=500,
             detail={"success": False, "error": str(exc)}
         )
+
+# -------------------------------------------------------------------
+# Protocol generation endpoint
+# -------------------------------------------------------------------
+@app.post("/protocol")
+def protocol_endpoint(request: DesignerPredictionRequest) -> Dict[str, Any]:
+    """Generate a laboratory protocol from Designer payload."""
+    try:
+        materials_dict = [m.dict() for m in request.materials]
+        final_mixing_dict = request.finalMixing.dict()
+        return generate_protocol(materials_dict, final_mixing_dict, request.tissue)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc)
+        )
+
+@app.post("/protocol/reference")
+def reference_protocol_endpoint(request: DesignerPredictionRequest) -> Dict[str, Any]:
+    """Generate a reference laboratory protocol based on the Knowledge Base."""
+    try:
+        materials_dict = [m.dict() for m in request.materials]
+        final_mixing_dict = request.finalMixing.dict()
+        return generate_reference_protocol(materials_dict, final_mixing_dict, request.tissue)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc)
+        )
+
+
+# -------------------------------------------------------------------
+# Literature search endpoint
+# -------------------------------------------------------------------
+@app.post("/literature/search")
+def literature_search(request: DesignerPredictionRequest) -> Dict[str, Any]:
+    """Search PubMed, Europe PMC, and Crossref for formulation-relevant literature."""
+    try:
+        material_names = [m.biomaterial for m in request.materials]
+        crosslinker = request.finalMixing.crosslinking if request.finalMixing else ""
+        records, search_query = retrieve_literature(
+            tissue=request.tissue,
+            materials=material_names,
+            crosslinker=crosslinker,
+            max_per_source=8,
+        )
+        return {
+            "success": True,
+            "query": search_query.primary_query(),
+            "all_queries": search_query.queries,
+            "total_results": len(records),
+            "results": [r.to_dict() for r in records],
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# -------------------------------------------------------------------
+# Evidence-based literature reference protocol endpoint
+# -------------------------------------------------------------------
+@app.post("/protocol/literature-reference")
+def literature_reference_protocol(request: DesignerPredictionRequest) -> Dict[str, Any]:
+    """
+    Build an Evidence-Based Reference Protocol from:
+      1. Local Knowledge Base (authoritative for known materials)
+      2. Retrieved literature (PubMed / Europe PMC / Crossref)
+
+    Falls back to KB-only if all external sources fail.
+    """
+    material_names = [m.biomaterial for m in request.materials]
+    materials_dict = [m.dict() for m in request.materials]
+    final_mixing_dict = request.finalMixing.dict()
+    crosslinker = request.finalMixing.crosslinking or ""
+
+    # Step 1 – retrieve literature (with fallback on failure)
+    try:
+        records, _ = retrieve_literature(
+            tissue=request.tissue,
+            materials=material_names,
+            crosslinker=crosslinker,
+            max_per_source=8,
+        )
+        top_records = records[:10]
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).warning("Literature retrieval failed: %s", exc)
+        top_records = []
+
+    # Step 2 – load KB profiles for each material
+    kb_profiles: Dict[str, Any] = {}
+    for mat_name in material_names:
+        try:
+            kb_profiles[mat_name.lower()] = knowledge_loader.load_material(mat_name.lower())
+        except Exception:
+            kb_profiles[mat_name.lower()] = {}
+
+    # Step 3 – load standard base steps
+    base_steps: list = []
+    try:
+        std = knowledge_loader.get_protocol("standard_protocol")
+        if std:
+            raw_steps = std.get("Steps", [])
+            base_steps = [str(s) for s in raw_steps]
+    except Exception:
+        pass
+
+    # Step 4 – build the evidence-based protocol
+    try:
+        protocol = build_literature_reference_protocol(
+            tissue=request.tissue,
+            materials=materials_dict,
+            final_mixing=final_mixing_dict,
+            top_records=top_records,
+            kb_material_profiles=kb_profiles,
+            base_steps=base_steps,
+        )
+    except Exception as exc:
+        # Ultimate fallback – return KB-only reference protocol
+        import logging
+        logging.getLogger(__name__).error("Evidence builder failed: %s", exc)
+        protocol = generate_reference_protocol(materials_dict, final_mixing_dict, request.tissue)
+        protocol["status"] = "KB-Only Fallback (literature retrieval unavailable)"
+
+    return protocol
 
 # -------------------------------------------------------------------
 # Projects CRUD endpoints

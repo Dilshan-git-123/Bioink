@@ -137,5 +137,13 @@ class KnowledgeLoader:
         return mapped_data
 
 
+    def get_protocol(self, protocol_name: str) -> Dict[str, Any] | None:
+        """Load a protocol from the Knowledge Base."""
+        try:
+            return self._parse_yaml_file("protocols", protocol_name)
+        except FileNotFoundError:
+            return None
+
+
 # Singleton
 loader = KnowledgeLoader()

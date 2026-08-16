@@ -4,6 +4,8 @@ import MaterialBuilder from "../../components/MaterialBuilder";
 import FinalMixing from "../../components/FinalMixing";
 import PredictionDashboard from "../../components/PredictionDashboard";
 import ProtocolGenerator from "../../components/ProtocolGenerator";
+import ReferenceProtocol from "../../components/ReferenceProtocol";
+import LiteratureReferenceProtocol from "../../components/LiteratureReferenceProtocol";
 import LiteraturePanel from "../../components/LiteraturePanel";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +50,8 @@ function Designer() {
   });
   const [prediction, setPrediction] = useState(null);
   const [protocol, setProtocol] = useState(null);
+  const [referenceProtocol, setReferenceProtocol] = useState(null);
+  const [litProtocol, setLitProtocol] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [tissueRecommendation, setTissueRecommendation] = useState(null);
@@ -280,6 +284,30 @@ function Designer() {
             {error && <p style={{ color: 'red', marginTop: '8px' }}>{error}</p>}
           </div>
           <PredictionDashboard prediction={prediction} loading={loading} error={error} />
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '20px', marginTop: '20px' }}>
+            <ProtocolGenerator
+              materials={materials}
+              finalMixing={finalMixing}
+              selectedTissue={selectedTissue}
+              protocol={protocol}
+              setProtocol={setProtocol}
+            />
+            <ReferenceProtocol
+              materials={materials}
+              finalMixing={finalMixing}
+              selectedTissue={selectedTissue}
+              referenceProtocol={referenceProtocol}
+              setReferenceProtocol={setReferenceProtocol}
+            />
+          </div>
+          <LiteratureReferenceProtocol
+            materials={materials}
+            finalMixing={finalMixing}
+            selectedTissue={selectedTissue}
+            litProtocol={litProtocol}
+            setLitProtocol={setLitProtocol}
+          />
         </div>
 
         {/* Right Panel */}
