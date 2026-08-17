@@ -25,6 +25,30 @@ def _format_source_citation(item: ExtractedEvidenceItem) -> str:
     return "[BioInkAI KB]"
 
 
+def _is_crosslinker_applicable(extracted_value: str, active_crosslinker: str, evidence_text: str) -> bool:
+    """Determine if extracted crosslinker evidence is compatible with the active formulation."""
+    if not active_crosslinker or not active_crosslinker.strip():
+        return True
+
+    active_lower = active_crosslinker.lower().strip()
+    ext_val_lower = str(extracted_value).lower()
+    ev_text_lower = str(evidence_text).lower()
+
+    if active_lower in ("cacl2", "calcium chloride"):
+        incompatible_terms = [
+            "schiff's base", "schiff base", "amine-aldehyde",
+            "primary amine + aldehyde", "primary amine and aldehyde",
+            "ha-nh2", "alg-cho", "aldehyde crosslinking",
+            "glutaraldehyde", "genipin"
+        ]
+        
+        for term in incompatible_terms:
+            if term in ext_val_lower or term in ev_text_lower:
+                return False
+
+    return True
+
+
 def merge_evidence_with_kb(
     gemini_result: ExtractionResult,
     kb_evidence_items: List[Dict],
@@ -74,13 +98,24 @@ def merge_evidence_with_kb(
         existing = merged.get(key)
         gem_priority = priority.get(gem_item.evidence_type, 99)
 
+        is_crosslink_param = "crosslink" in key
+        applicable = True
+        if is_crosslink_param and crosslinker:
+            applicable = _is_crosslinker_applicable(gem_item.value, crosslinker, gem_item.evidence_text)
+
+        gem_dict = _gemini_item_to_dict(gem_item)
+        if not applicable:
+            gem_dict["applicability"]["same_crosslinker"] = False
+            # Do NOT let it replace a CaCl2-related KB/evidence item
+            gem_priority = 999
+
         if existing is None:
             # New parameter from Gemini
-            merged[key] = _gemini_item_to_dict(gem_item)
+            merged[key] = gem_dict
         else:
             existing_priority = priority.get(existing.get("evidence_type", "not_available"), 99)
             if gem_priority < existing_priority:
-                merged[key] = _gemini_item_to_dict(gem_item)
+                merged[key] = gem_dict
 
     return list(merged.values())
 
@@ -175,6 +210,11 @@ def synthesize_steps_with_evidence(
         has_crosslink = any("crosslink" in s.get("title", "").lower() or "crosslink" in s.get("instruction", "").lower() for s in enriched_steps)
         if not has_crosslink:
             crosslink_ev = ev_lookup.get("crosslinker_agent") or ev_lookup.get("crosslinker_concentration")
+            
+            # Do not use incompatible crosslinker evidence in the generated laboratory procedure.
+            if crosslink_ev and not crosslink_ev.get("applicability", {}).get("same_crosslinker", True):
+                crosslink_ev = None
+
             enriched_steps.append({
                 "step_number": len(enriched_steps) + 1,
                 "title": "Crosslinking",
