@@ -22,6 +22,9 @@ class LiteratureRecord:
     full_text_available: bool
     url: Optional[str]
     relevance_score: int = 0
+    access_level: str = "metadata_only"  # "full_text" | "abstract" | "metadata_only"
+    text: Optional[str] = None
+    sections: Dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -37,6 +40,9 @@ class LiteratureRecord:
             "full_text_available": self.full_text_available,
             "url": self.url,
             "relevance_score": self.relevance_score,
+            "access_level": self.access_level,
+            "text": self.text,
+            "sections": self.sections,
         }
 
 
@@ -50,7 +56,7 @@ class EvidenceItem:
     parameter: str
     value: Optional[str]           # None if not available
     unit: Optional[str]
-    evidence_type: str             # "bibliographic" | "abstract" | "kb_derived" | "not_available"
+    evidence_type: str             # "experimental" | "bibliographic" | "abstract" | "kb_derived" | "not_available"
     confidence: str                # "high" | "medium" | "low" | "unavailable"
     source_title: Optional[str] = None
     source_doi: Optional[str] = None
@@ -58,6 +64,9 @@ class EvidenceItem:
     source_pmcid: Optional[str] = None
     source_database: Optional[str] = None
     note: Optional[str] = None
+    source_location: Optional[str] = None
+    evidence_text: Optional[str] = None
+    applicability: Optional[Dict[str, bool]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -66,6 +75,8 @@ class EvidenceItem:
             "unit": self.unit,
             "evidence_type": self.evidence_type,
             "confidence": self.confidence,
+            "source_location": self.source_location,
+            "evidence_text": self.evidence_text,
             "source": {
                 "title": self.source_title,
                 "doi": self.source_doi,
@@ -73,8 +84,17 @@ class EvidenceItem:
                 "pmcid": self.source_pmcid,
                 "database": self.source_database,
             },
-            "note": self.note,
+            "note": self.note or self.evidence_text,
+            "applicability": self.applicability or {
+                "same_material": True,
+                "same_crosslinker": True,
+                "same_formulation": True,
+                "same_tissue": True,
+                "same_application": True
+            },
         }
+
+
 
 
 @dataclass

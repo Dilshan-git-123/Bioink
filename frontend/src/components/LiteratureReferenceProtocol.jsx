@@ -16,7 +16,7 @@ import {
   generateLiteratureReferenceProtocol,
 } from "../services/protocolApi";
 import { parseError } from "../utils/errorHandler";
-import { jsPDF } from "jspdf";
+import { downloadReferenceProtocolPDF } from "../utils/pdfGenerator";
 
 export function normalizeProtocolStep(step, index) {
   if (typeof step === 'string') {
@@ -24,7 +24,8 @@ export function normalizeProtocolStep(step, index) {
       step_number: index + 1,
       title: "",
       instruction: step,
-      parameters: {},
+      parameters: [],
+      evidence: [],
       source: null
     };
   }
@@ -34,7 +35,9 @@ export function normalizeProtocolStep(step, index) {
         step_number: step.step_number || index + 1,
         title: step.title || "",
         instruction: step.instruction || "",
-        parameters: step.parameters || {},
+        // Always normalize parameters/evidence to arrays
+        parameters: Array.isArray(step.parameters) ? step.parameters : [],
+        evidence: Array.isArray(step.evidence) ? step.evidence : [],
         source: step.source || null
       };
     }
@@ -45,7 +48,8 @@ export function normalizeProtocolStep(step, index) {
         step_number: index + 1,
         title: "",
         instruction: String(step[key]),
-        parameters: {},
+        parameters: [],
+        evidence: [],
         source: null
       };
     }
@@ -54,7 +58,8 @@ export function normalizeProtocolStep(step, index) {
     step_number: index + 1,
     title: "",
     instruction: String(step),
-    parameters: {},
+    parameters: [],
+    evidence: [],
     source: null
   };
 }
@@ -66,7 +71,9 @@ const SOURCE_COLORS = {
 };
 
 const EVIDENCE_COLORS = {
+  experimental: "#059669",    // green — experimentally confirmed
   kb_derived: "#0F4C81",
+  knowledge_base: "#0F4C81",
   bibliographic: "#7C3AED",
   abstract: "#D97706",
   not_available: "#94A3B8",
@@ -230,8 +237,21 @@ function LiteratureResultCard({ record, index }) {
 }
 
 // ── Evidence Table ────────────────────────────────────────────────────────────
-function EvidenceTable({ items }) {
-  if (!items || items.length === 0) return null;
+const APPLICABILITY_ICONS = {
+  true: { icon: "✓", color: "#059669" },
+  false: { icon: "✗", color: "#ef4444" },
+};
+
+function ApplicabilityBadge({ value }) {
+  const { icon, color } = value ? APPLICABILITY_ICONS.true : APPLICABILITY_ICONS.false;
+  return (
+    <span style={{ color, fontWeight: 700, fontSize: "12px" }}>{icon}</span>
+  );
+}
+
+function EvidenceTable({ items, title = "Evidence-Backed Parameters", filterFn }) {
+  const displayItems = filterFn ? items.filter(filterFn) : items;
+  if (!displayItems || displayItems.length === 0) return null;
   return (
     <div style={{ overflowX: "auto", marginBottom: "25px" }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
@@ -240,12 +260,17 @@ function EvidenceTable({ items }) {
             <th style={thStyle}>Parameter</th>
             <th style={thStyle}>Value</th>
             <th style={thStyle}>Evidence Type</th>
+            <th style={thStyle}>Source Location</th>
+            <th style={thStyle}>Applicability</th>
             <th style={thStyle}>Source</th>
           </tr>
         </thead>
         <tbody>
-          {items.map((item, i) => {
+          {displayItems.map((item, i) => {
             const eColor = EVIDENCE_COLORS[item.evidence_type] || "#94A3B8";
+            const app = item.applicability || {};
+            const appScore = Object.values(app).filter(Boolean).length;
+            const appTotal = Object.keys(app).length;
             return (
               <tr key={i} style={{ borderBottom: "1px solid #e2e8f0" }}>
                 <td style={tdStyle}>{item.parameter}</td>
@@ -263,6 +288,26 @@ function EvidenceTable({ items }) {
                   >
                     {item.evidence_type}
                   </span>
+                </td>
+                <td style={tdStyle}>
+                  <span style={{ color: "#64748b", fontSize: "11px" }}>
+                    {item.source_location || "—"}
+                  </span>
+                </td>
+                <td style={{ ...tdStyle, textAlign: "center" }}>
+                  {appTotal > 0 ? (
+                    <span
+                      title={Object.entries(app).map(([k, v]) => `${k}: ${v ? "✓" : "✗"}`).join(" | ")}
+                      style={{
+                        fontSize: "11px",
+                        color: appScore === appTotal ? "#059669" : appScore > 0 ? "#D97706" : "#ef4444",
+                        fontWeight: 600,
+                        cursor: "help",
+                      }}
+                    >
+                      {appScore}/{appTotal}
+                    </span>
+                  ) : "—"}
                 </td>
                 <td style={tdStyle}>
                   {item.source?.title ? (
@@ -299,94 +344,7 @@ const tdStyle = {
   verticalAlign: "top",
 };
 
-// ── PDF Download ──────────────────────────────────────────────────────────────
-function downloadLitRefPDF(protocol, tissue) {
-  if (!protocol) {
-    alert("Generate a protocol first.");
-    return;
-  }
-  const doc = new jsPDF();
-  let y = 20;
-  const addPage = () => { doc.addPage(); y = 20; };
-  const checkY = (needed = 15) => { if (y + needed > 270) addPage(); };
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.text("BioInkAI v2.0", 105, y, { align: "center" });
-  y += 9;
-  doc.setFontSize(14);
-  doc.text("Evidence-Based Laboratory Reference Protocol", 105, y, { align: "center" });
-  y += 8;
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "italic");
-  doc.text(`Source: ${protocol.source || "BioInkAI KB + Scientific Literature"}`, 105, y, { align: "center" });
-  y += 5;
-  doc.line(15, y, 195, y);
-  y += 10;
-
-  const section = (label) => {
-    checkY(12);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text(label, 15, y);
-    y += 7;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-  };
-
-  const paragraph = (text) => {
-    const lines = doc.splitTextToSize(text || "", 175);
-    checkY(lines.length * 6 + 4);
-    doc.text(lines, 15, y);
-    y += lines.length * 6 + 4;
-  };
-
-  const bullet = (text) => {
-    const lines = doc.splitTextToSize("• " + text, 170);
-    checkY(lines.length * 6 + 3);
-    doc.text(lines, 20, y);
-    y += lines.length * 6 + 3;
-  };
-
-  section("Target Tissue");
-  paragraph(tissue || "General");
-  section("Objective");
-  paragraph(protocol.objective || "");
-  section("Required Materials");
-  (protocol.required_materials || []).forEach(bullet);
-  section("Laboratory Procedure");
-  (protocol.steps || []).forEach((s, i) => bullet(`${i + 1}. ${s}`));
-  section("Storage Conditions");
-  paragraph(protocol.storage || "");
-  section("Safety Notes");
-  (protocol.safety || []).forEach(bullet);
-
-  if (protocol.evidence_items?.length > 0) {
-    section("Evidence-Backed Parameters");
-    (protocol.evidence_items || []).forEach((item) => {
-      bullet(`${item.parameter}: ${item.value || "not available"} [${item.evidence_type}]`);
-    });
-  }
-
-  if (protocol.references?.length > 0) {
-    section("Scientific References");
-    (protocol.references || []).forEach((ref, i) => {
-      const line = `${i + 1}. ${ref.authors || ""} (${ref.year || ""}). ${ref.title || ""}. ${ref.journal || ""}. ${ref.doi ? "DOI: " + ref.doi : ""} ${ref.pmid ? "PMID: " + ref.pmid : ""}`.trim();
-      bullet(line);
-    });
-  }
-
-  checkY(12);
-  doc.setFont("helvetica", "bold");
-  doc.text("Status:", 15, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(protocol.status || "Reference", 45, y);
-  y += 10;
-
-  doc.setFontSize(9);
-  doc.text("Generated by BioInkAI v2.0 — Evidence-Based Literature Reference", 105, 285, { align: "center" });
-  doc.save(`BioInkAI_${tissue || "General"}_Literature_Reference_Protocol.pdf`);
-}
 
 // ── Main Component ────────────────────────────────────────────────────────────
 function LiteratureReferenceProtocol({
@@ -398,6 +356,7 @@ function LiteratureReferenceProtocol({
 }) {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [loadingProtocol, setLoadingProtocol] = useState(false);
+  const [loadingStage, setLoadingStage] = useState("");
   const [searchStatus, setSearchStatus] = useState([]);
   const [literatureResults, setLiteratureResults] = useState(null);
   const [error, setError] = useState("");
@@ -430,23 +389,34 @@ function LiteratureReferenceProtocol({
   const handleGenerateProtocol = async () => {
     if (!selectedTissue) { setError("Please select a target tissue first."); return; }
     if (!materials?.length) { setError("Please add at least one biomaterial."); return; }
-    
+
     try {
       setError("");
       setLoadingProtocol(true);
+      setLoadingStage("Retrieving literature...");
 
       const payload = buildFormPayload();
+
+      // Small delay so the user sees stage messages
+      await new Promise(r => setTimeout(r, 300));
+      setLoadingStage("Extracting experimental evidence with Gemini...");
+      await new Promise(r => setTimeout(r, 300));
+      setLoadingStage("Validating scientific evidence...");
+      await new Promise(r => setTimeout(r, 200));
+      setLoadingStage("Generating evidence-based protocol...");
+
       const result = await generateLiteratureReferenceProtocol(payload);
-      
       console.log("[BioInkAI] Literature protocol response:", result);
-      
+
       setLitProtocol(result);
+      setLoadingStage("");
     } catch (error) {
       console.error("[BioInkAI] Literature protocol generation failed:", error);
       setError(
-        "Literature protocol generation failed: " + 
+        "Literature protocol generation failed: " +
         (error?.detail || error?.message || "Unknown error")
       );
+      setLoadingStage("");
     } finally {
       setLoadingProtocol(false);
     }
@@ -547,9 +517,9 @@ function LiteratureReferenceProtocol({
               fontSize: "13px",
             }}
           >
-            {loadingProtocol ? "Building..." : "📋 Generate Protocol"}
+            {loadingProtocol ? "Generating..." : "📋 Generate Protocol"}
           </button>
-          <button onClick={() => downloadLitRefPDF(litProtocol, selectedTissue)}>📄 PDF</button>
+          <button onClick={() => downloadReferenceProtocolPDF(litProtocol, selectedTissue)}>📄 PDF</button>
           <button onClick={handlePrint}>🖨 Print</button>
           <button onClick={handleCopy}>📋 Copy</button>
         </div>
@@ -571,7 +541,28 @@ function LiteratureReferenceProtocol({
         </div>
       )}
 
-      {/* ── Search status indicators ─────────────────────────────────────── */}
+      {/* ── Loading stage indicator ─────────────────────────────────────── */}
+      {loadingProtocol && loadingStage && (
+        <div
+          style={{
+            marginTop: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "10px 16px",
+            background: "#EFF6FF",
+            borderRadius: "8px",
+            border: "1px solid #BFDBFE",
+            color: "#1E40AF",
+            fontSize: "13px",
+            fontWeight: 600,
+          }}
+        >
+          <span style={{ animation: "spin 1.2s linear infinite", display: "inline-block" }}>⏳</span>
+          {loadingStage}
+        </div>
+      )}
+
       {loadingSearch && searchStatus.length > 0 && (
         <div
           style={{
@@ -679,10 +670,78 @@ function LiteratureReferenceProtocol({
             <p style={{ margin: "0 0 6px", color: "#475569", fontSize: "14px" }}>
               <strong>Objective:</strong> {litProtocol.objective}
             </p>
-            <p style={{ margin: 0, fontSize: "14px" }}>
+            <p style={{ margin: "0 0 10px", fontSize: "14px" }}>
               <strong>Status:</strong>{" "}
               <span style={{ color: "#10b981", fontWeight: 600 }}>{litProtocol.status}</span>
             </p>
+
+            {/* LLM Status Badge */}
+            {litProtocol.llm && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "8px" }}>
+                {litProtocol.llm.used ? (
+                  <span style={{ background: "#D1FAE5", color: "#065F46", borderRadius: "6px", padding: "3px 10px", fontSize: "12px", fontWeight: 700 }}>
+                    ✨ AI Evidence Extraction — {litProtocol.llm.model}
+                  </span>
+                ) : (
+                  <span style={{ background: "#FEF3C7", color: "#92400E", borderRadius: "6px", padding: "3px 10px", fontSize: "12px", fontWeight: 700 }}>
+                    ⚠ AI evidence extraction unavailable — {litProtocol.llm.status === "not_configured" ? "Not configured" : "Fallback mode"}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Evidence Summary */}
+            {litProtocol.evidence_summary && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "6px" }}>
+                {litProtocol.evidence_summary.total_references_retrieved > 0 && (
+                  <span style={{ background: "#F1F5F9", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#334155", fontWeight: 600 }}>
+                    📄 {litProtocol.evidence_summary.total_references_retrieved} references retrieved
+                  </span>
+                )}
+                {litProtocol.evidence_summary.papers_processed > 0 && (
+                  <span style={{ background: "#F1F5F9", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#334155", fontWeight: 600 }}>
+                    🔍 {litProtocol.evidence_summary.papers_processed} papers processed by AI
+                  </span>
+                )}
+                {litProtocol.evidence_summary.full_text_references > 0 && (
+                  <span style={{ background: "#DCFCE7", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#166534", fontWeight: 600 }}>
+                    📑 {litProtocol.evidence_summary.full_text_references} full-text
+                  </span>
+                )}
+                {litProtocol.evidence_summary.abstract_only_references > 0 && (
+                  <span style={{ background: "#FEF3C7", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#92400E", fontWeight: 600 }}>
+                    📋 {litProtocol.evidence_summary.abstract_only_references} abstract-only
+                  </span>
+                )}
+                {litProtocol.evidence_summary.experimental_parameters > 0 && (
+                  <span style={{ background: "#DCFCE7", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#166534", fontWeight: 600 }}>
+                    🔬 {litProtocol.evidence_summary.experimental_parameters} experimental
+                  </span>
+                )}
+                {litProtocol.evidence_summary.knowledge_base_parameters > 0 && (
+                  <span style={{ background: "#DBEAFE", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#1E40AF", fontWeight: 600 }}>
+                    📚 {litProtocol.evidence_summary.knowledge_base_parameters} KB
+                  </span>
+                )}
+                {litProtocol.evidence_summary.bibliographic_parameters > 0 && (
+                  <span style={{ background: "#EDE9FE", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#6D28D9", fontWeight: 600 }}>
+                    🔗 {litProtocol.evidence_summary.bibliographic_parameters} bibliographic
+                  </span>
+                )}
+                {litProtocol.evidence_summary.not_available_parameters > 0 && (
+                  <span style={{ background: "#F1F5F9", borderRadius: "5px", padding: "2px 8px", fontSize: "11px", color: "#64748B", fontWeight: 600 }}>
+                    — {litProtocol.evidence_summary.not_available_parameters} not available
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Non-blocking extraction warnings */}
+            {litProtocol.extraction_warnings?.length > 0 && !litProtocol.llm?.used && (
+              <div style={{ marginTop: "8px", padding: "8px 12px", background: "#FFFBEB", borderRadius: "6px", border: "1px solid #FDE68A", fontSize: "12px", color: "#92400E" }}>
+                {litProtocol.extraction_warnings[0]}
+              </div>
+            )}
           </div>
 
           {/* Required Materials */}
@@ -749,18 +808,51 @@ function LiteratureReferenceProtocol({
           {/* Evidence Table */}
           {litProtocol.evidence_items?.length > 0 && (
             <>
-              <h3
-                style={{ color: "#334155", borderBottom: "1px solid #e2e8f0", paddingBottom: "5px" }}
-              >
+              <h3 style={{ color: "#334155", borderBottom: "1px solid #e2e8f0", paddingBottom: "5px" }}>
                 Evidence-Backed Parameters
               </h3>
               <p style={{ color: "#64748b", fontSize: "12px", marginBottom: "8px" }}>
                 <strong>Legend:</strong>{" "}
+                <span style={{ color: "#059669" }}>experimental</span> = AI-extracted from full-text ·{" "}
                 <span style={{ color: "#0F4C81" }}>kb_derived</span> = from local knowledge base ·{" "}
                 <span style={{ color: "#7C3AED" }}>bibliographic</span> = paper confirms topic ·{" "}
                 <span style={{ color: "#94A3B8" }}>not_available</span> = not in available sources
+                {" | "}
+                <strong>Applicability</strong>: score out of 4 criteria (material / crosslinker / tissue / application) — hover for detail
               </p>
-              <EvidenceTable items={litProtocol.evidence_items} />
+              {/* KB-derived and Experimental */}
+              <EvidenceTable
+                items={litProtocol.evidence_items}
+                filterFn={item => item.evidence_type === "kb_derived" || item.evidence_type === "experimental"}
+              />
+
+              {/* Bibliographic Context */}
+              {litProtocol.evidence_items.some(item => item.evidence_type === "bibliographic") && (
+                <>
+                  <h4 style={{ color: "#7C3AED", marginBottom: "6px", marginTop: "4px" }}>📖 Bibliographic Context</h4>
+                  <p style={{ color: "#64748b", fontSize: "11px", marginBottom: "6px" }}>
+                    These parameters are confirmed at the topic level only. Exact values require full-text verification.
+                  </p>
+                  <EvidenceTable
+                    items={litProtocol.evidence_items}
+                    filterFn={item => item.evidence_type === "bibliographic"}
+                  />
+                </>
+              )}
+
+              {/* Not Available */}
+              {litProtocol.evidence_items.some(item => item.evidence_type === "not_available") && (
+                <>
+                  <h4 style={{ color: "#94A3B8", marginBottom: "6px", marginTop: "4px" }}>⚠ Not Available</h4>
+                  <p style={{ color: "#64748b", fontSize: "11px", marginBottom: "6px" }}>
+                    The following parameters could not be confirmed from any available source. Verify independently before laboratory use.
+                  </p>
+                  <EvidenceTable
+                    items={litProtocol.evidence_items}
+                    filterFn={item => item.evidence_type === "not_available"}
+                  />
+                </>
+              )}
             </>
           )}
 

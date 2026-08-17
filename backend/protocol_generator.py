@@ -42,11 +42,13 @@ def generate_protocol(materials, final_mixing, tissue):
         steps.append(f"Apply crosslinking method ({crosslinking}) according to the specific bioprinter protocol (pre-, during, or post-printing).")
 
     storage = "Store the prepared bioink formulation at 4°C, protected from light. It is recommended to use within 24 hours to maintain cell viability and mechanical integrity."
-    
+
+    # Safety notes — only include generic notes that apply to all formulations.
+    # Crosslinker-specific hazard notes are dynamically determined and must
+    # NOT default to glutaraldehyde warnings when CaCl2 or other safe crosslinkers are used.
     safety = [
         "Wear appropriate Personal Protective Equipment (PPE) including gloves, lab coat, and safety glasses.",
         "Perform all cell-handling and mixing steps in a sterile biosafety cabinet to prevent contamination.",
-        "Handle any chemical crosslinkers (e.g., glutaraldehyde) inside a chemical fume hood."
     ]
     
     status = "Ready for Printing"
@@ -83,7 +85,8 @@ def normalize_step(step, index):
                 "step_number": step.get("step_number", index + 1),
                 "title": step.get("title", ""),
                 "instruction": step.get("instruction", ""),
-                "parameters": step.get("parameters", {}),
+                "parameters": step.get("parameters") if isinstance(step.get("parameters"), list) else [],
+                "evidence": step.get("evidence") if isinstance(step.get("evidence"), list) else [],
                 "source": step.get("source", None)
             }
         else:
@@ -92,7 +95,8 @@ def normalize_step(step, index):
                     "step_number": index + 1,
                     "title": "",
                     "instruction": str(v),
-                    "parameters": {},
+                    "parameters": [],
+                    "evidence": [],
                     "source": None
                 }
     elif isinstance(step, str):
@@ -100,16 +104,19 @@ def normalize_step(step, index):
             "step_number": index + 1,
             "title": "",
             "instruction": step,
-            "parameters": {},
+            "parameters": [],
+            "evidence": [],
             "source": None
         }
     return {
         "step_number": index + 1,
         "title": "",
         "instruction": str(step),
-        "parameters": {},
+        "parameters": [],
+        "evidence": [],
         "source": None
     }
+
 
 def generate_reference_protocol(materials, final_mixing, tissue):
     """
@@ -246,7 +253,8 @@ def generate_reference_protocol(materials, final_mixing, tissue):
             "step_number": len(steps) + 1,
             "title": "Crosslinking",
             "instruction": f"Follow specific crosslinking procedure using {final_mixing.get('crosslinking')} as outlined in the reference literature.",
-            "parameters": {},
+            "parameters": [],
+            "evidence": [],
             "source": None
         })
 

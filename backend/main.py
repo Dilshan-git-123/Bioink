@@ -21,7 +21,10 @@ from knowledge_engine.profile_builder import ProfileBuilder
 
 # Literature retrieval layer
 from literature.literature_service import retrieve_literature, build_queries
-from literature.evidence_builder import build_literature_reference_protocol
+from literature.evidence_builder import (
+    build_literature_reference_protocol,
+    build_literature_reference_protocol_with_llm,
+)
 
 # Authentication & DB imports
 from auth.auth_routes import router as auth_router
@@ -312,15 +315,24 @@ def literature_reference_protocol(request: DesignerPredictionRequest) -> Dict[st
     Build an Evidence-Based Reference Protocol from:
       1. Local Knowledge Base (authoritative for known materials)
       2. Retrieved literature (PubMed / Europe PMC / Crossref)
+      3. Gemini 2.5 Flash evidence extraction (if GEMINI_API_KEY is configured)
 
     Falls back to KB-only if all external sources fail.
+    GEMINI_API_KEY is read from the server environment only — never from the request.
     """
+    import os as _os
+    import logging as _logging
+    _log = _logging.getLogger(__name__)
+
     material_names = [m.biomaterial for m in request.materials]
     materials_dict = [m.dict() for m in request.materials]
     final_mixing_dict = request.finalMixing.dict()
     crosslinker = request.finalMixing.crosslinking or ""
 
-    # Step 1 – retrieve literature (with fallback on failure)
+    # How many top papers to send to Gemini (configurable, default 5)
+    top_n_for_llm = int(_os.environ.get("TOP_LITERATURE_FOR_LLM", "5"))
+
+    # Step 1 — retrieve literature (with fallback on failure)
     try:
         records, _ = retrieve_literature(
             tissue=request.tissue,
@@ -330,11 +342,10 @@ def literature_reference_protocol(request: DesignerPredictionRequest) -> Dict[st
         )
         top_records = records[:10]
     except Exception as exc:
-        import logging
-        logging.getLogger(__name__).warning("Literature retrieval failed: %s", exc)
+        _log.warning("Literature retrieval failed: %s", exc)
         top_records = []
 
-    # Step 2 – load KB profiles for each material
+    # Step 2 — load KB profiles for each material
     kb_profiles: Dict[str, Any] = {}
     for mat_name in material_names:
         try:
@@ -342,32 +353,35 @@ def literature_reference_protocol(request: DesignerPredictionRequest) -> Dict[st
         except Exception:
             kb_profiles[mat_name.lower()] = {}
 
-    # Step 3 – load standard base steps
+    # Step 3 — load standard base steps (pass raw objects — NOT stringified)
+    # Stringifying here converts YAML dicts into Python repr strings like
+    # "{'Step 1': 'Weigh...'}" which leak into the UI. normalize_step()
+    # in evidence_builder handles all str / dict / other shapes correctly.
     base_steps: list = []
     try:
         std = knowledge_loader.get_protocol("standard_protocol")
         if std:
-            raw_steps = std.get("Steps", [])
-            base_steps = [str(s) for s in raw_steps]
+            base_steps = std.get("Steps", [])
     except Exception:
         pass
 
-    # Step 4 – build the evidence-based protocol
+    # Step 4 — build the evidence-based protocol (with optional Gemini extraction)
     try:
-        protocol = build_literature_reference_protocol(
+        protocol = build_literature_reference_protocol_with_llm(
             tissue=request.tissue,
             materials=materials_dict,
             final_mixing=final_mixing_dict,
             top_records=top_records,
             kb_material_profiles=kb_profiles,
             base_steps=base_steps,
+            top_n_for_llm=top_n_for_llm,
         )
     except Exception as exc:
-        # Ultimate fallback – return KB-only reference protocol
-        import logging
-        logging.getLogger(__name__).error("Evidence builder failed: %s", exc)
+        # Ultimate fallback — return KB-only reference protocol
+        _log.error("Evidence builder failed: %s", exc)
         protocol = generate_reference_protocol(materials_dict, final_mixing_dict, request.tissue)
         protocol["status"] = "KB-Only Fallback (literature retrieval unavailable)"
+        protocol["llm"] = {"used": False, "provider": "Gemini", "model": "gemini-2.5-flash", "status": "unavailable"}
 
     return protocol
 

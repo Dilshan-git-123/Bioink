@@ -195,7 +195,8 @@ export function normalizeProtocolStep(step, index) {
       step_number: index + 1,
       title: "",
       instruction: step,
-      parameters: {},
+      parameters: [],
+      evidence: [],
       source: null
     };
   }
@@ -205,7 +206,9 @@ export function normalizeProtocolStep(step, index) {
         step_number: step.step_number || index + 1,
         title: step.title || "",
         instruction: step.instruction || "",
-        parameters: step.parameters || {},
+        // Always normalize to arrays -- never raw dicts
+        parameters: Array.isArray(step.parameters) ? step.parameters : [],
+        evidence: Array.isArray(step.evidence) ? step.evidence : [],
         source: step.source || null
       };
     }
@@ -216,7 +219,8 @@ export function normalizeProtocolStep(step, index) {
         step_number: index + 1,
         title: "",
         instruction: String(step[key]),
-        parameters: {},
+        parameters: [],
+        evidence: [],
         source: null
       };
     }
@@ -225,7 +229,8 @@ export function normalizeProtocolStep(step, index) {
     step_number: index + 1,
     title: "",
     instruction: String(step),
-    parameters: {},
+    parameters: [],
+    evidence: [],
     source: null
   };
 }
@@ -242,189 +247,150 @@ export function downloadReferenceProtocolPDF(protocol, tissue = "General") {
   // Title
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.text("BIOINKAI v2.0", 105, y, { align: "center" });
-  y += 10;
+  doc.text("BioInkAI v2.0", 105, y, { align: "center" });
+  y += 9;
   
   doc.setFontSize(14);
-  doc.text("Knowledge Base / Literature Reference Protocol", 105, y, { align: "center" });
-  y += 10;
+  doc.text("Evidence-Based Laboratory Reference Protocol", 105, y, { align: "center" });
+  y += 7;
+
+  // LLM / Source metadata
+  const llmStatus = protocol.llm?.used 
+    ? `Gemini 2.5 Flash (${protocol.llm.status})`
+    : `AI evidence extraction unavailable (${protocol.llm?.status || "Fallback Mode"})`;
   
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  doc.text(`Source: ${protocol.source || "BioInkAI KB + Literature"} | LLM Status: ${llmStatus}`, 105, y, { align: "center" });
+  y += 5;
+
   doc.line(15, y, 195, y);
   y += 10;
 
   // Metadata block
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.text("Target Tissue:", 15, y);
   doc.setFont("helvetica", "normal");
-  doc.text(tissue || "General", 55, y);
-  y += 7;
+  doc.text(tissue || "General", 45, y);
+  y += 6;
 
   doc.setFont("helvetica", "bold");
   doc.text("Formulation:", 15, y);
   doc.setFont("helvetica", "normal");
   const materialsStr = (protocol.required_materials || []).join(", ") || "Not specified";
-  doc.text(materialsStr, 55, y);
-  y += 7;
+  const materialsLines = doc.splitTextToSize(materialsStr, 140);
+  doc.text(materialsLines, 45, y);
+  y += materialsLines.length * 6 + 1;
 
-  doc.setFont("helvetica", "bold");
-  doc.text("Protocol Type:", 15, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(protocol.protocol_type || "Reference", 55, y);
-  y += 7;
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Evidence Source:", 15, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(protocol.source || "BioInkAI Knowledge Base", 55, y);
-  y += 10;
+  // Evidence summary
+  if (protocol.evidence_summary) {
+    const es = protocol.evidence_summary;
+    const summaryText = `Processed: ${es.papers_processed} papers | Experimental: ${es.experimental_parameters} | KB: ${es.knowledge_base_parameters} | Not Available: ${es.not_available_parameters}`;
+    doc.setFont("helvetica", "bold");
+    doc.text("Evidence Sum:", 15, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(summaryText, 45, y);
+    y += 7;
+  }
 
   doc.line(15, y, 195, y);
   y += 10;
 
-  // Sections
+  // Sections helper
   const addSectionHeader = (title) => {
-    if (y + 25 > 265) { doc.addPage(); y = 20; }
+    if (y + 25 > 270) { doc.addPage(); y = 20; }
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.text(title, 15, y);
-    y += 7;
+    y += 5;
     doc.line(15, y, 195, y);
     y += 7;
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
+    doc.setFontSize(10);
   };
 
   // OBJECTIVE
   addSectionHeader("OBJECTIVE");
   const objectiveLines = doc.splitTextToSize(protocol.objective || "Not specified.", 175);
   doc.text(objectiveLines, 15, y);
-  y += objectiveLines.length * 6 + 10;
+  y += objectiveLines.length * 6 + 8;
 
   // REQUIRED MATERIALS
   addSectionHeader("REQUIRED MATERIALS");
   (protocol.required_materials || []).forEach((item) => {
-    if (y + 12 > 265) { doc.addPage(); y = 20; }
+    if (y + 10 > 270) { doc.addPage(); y = 20; }
     doc.text("• " + item, 20, y);
-    y += 7;
+    y += 6;
   });
-  y += 5;
-
-  // EQUIPMENT
-  addSectionHeader("EQUIPMENT");
-  const equipmentText = "Standard extrusion bioprinting system, analytical balance, magnetic stirrer, and sterile biosafety cabinet.";
-  const equipLines = doc.splitTextToSize(equipmentText, 175);
-  doc.text(equipLines, 15, y);
-  y += equipLines.length * 6 + 10;
+  y += 4;
 
   // LABORATORY PROCEDURE
   addSectionHeader("LABORATORY PROCEDURE");
   (protocol.steps || []).forEach((step, index) => {
     const norm = normalizeProtocolStep(step, index);
     const header = `Step ${norm.step_number}${norm.title ? " — " + norm.title : ""}`;
-    const instrLines = doc.splitTextToSize(`Instruction:\n${norm.instruction}`, 170);
+    const instrLines = doc.splitTextToSize(norm.instruction, 170);
     
-    const needed = (norm.title ? 12 : 6) + instrLines.length * 6 + 10;
-    if (y + needed > 265) { doc.addPage(); y = 20; }
+    // Calculate space needed for this step
+    const needed = (norm.title ? 10 : 5) + instrLines.length * 6 + 6;
+    if (y + needed > 270) { doc.addPage(); y = 20; }
     
     doc.setFont("helvetica", "bold");
     doc.text(header, 15, y);
-    y += 6;
+    y += 5;
     doc.setFont("helvetica", "normal");
     doc.text(instrLines, 20, y);
-    y += instrLines.length * 6 + 6;
+    y += instrLines.length * 6 + 5;
   });
-  y += 5;
-
-  // CROSSLINKING
-  addSectionHeader("CROSSLINKING");
-  // Find crosslinker info
-  let crossMethod = "Not specified in available evidence.";
-  let crossConc = "Not specified in available evidence.";
-  let crossTime = "Not specified in available evidence.";
-  
-  if (protocol.evidence_items && protocol.evidence_items.length > 0) {
-    protocol.evidence_items.forEach((item) => {
-      const paramName = String(item.parameter).toLowerCase();
-      if (paramName.includes("crosslink")) {
-        if (item.value) {
-          if (paramName.includes("time")) crossTime = item.value;
-          else if (paramName.includes("concentration") || paramName.includes("method")) crossMethod = item.value;
-        }
-      }
-    });
-  }
-  
-  // Also check standard final mixing crosslinking
-  if (crossMethod.includes("Not specified") && protocol.steps) {
-    // check if any step mentions CaCl2 or crosslinker
-    const lastStep = protocol.steps[protocol.steps.length - 1];
-    const normLast = normalizeProtocolStep(lastStep, protocol.steps.length - 1);
-    if (normLast.instruction.toLowerCase().includes("crosslink")) {
-      crossMethod = normLast.instruction;
-    }
-  }
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Method:", 15, y);
-  doc.setFont("helvetica", "normal");
-  const crossMethodLines = doc.splitTextToSize(crossMethod, 140);
-  doc.text(crossMethodLines, 45, y);
-  y += crossMethodLines.length * 6 + 2;
-
-  if (y + 12 > 265) { doc.addPage(); y = 20; }
-  doc.setFont("helvetica", "bold");
-  doc.text("Concentration:", 15, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(crossConc, 45, y);
-  y += 7;
-
-  if (y + 12 > 265) { doc.addPage(); y = 20; }
-  doc.setFont("helvetica", "bold");
-  doc.text("Time:", 15, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(crossTime, 45, y);
-  y += 10;
+  y += 4;
 
   // STORAGE
-  addSectionHeader("STORAGE");
+  addSectionHeader("STORAGE CONDITIONS");
   const storageLines = doc.splitTextToSize(protocol.storage || "Standard 4°C storage recommended.", 175);
   doc.text(storageLines, 15, y);
-  y += storageLines.length * 6 + 10;
+  y += storageLines.length * 6 + 8;
 
   // SAFETY
-  addSectionHeader("SAFETY");
+  addSectionHeader("SAFETY NOTES");
   (protocol.safety || []).forEach((note) => {
-    const lines = doc.splitTextToSize("• " + note, 170);
-    if (y + lines.length * 6 + 4 > 265) { doc.addPage(); y = 20; }
+    const lines = doc.splitTextToSize(note, 170);
+    if (y + lines.length * 6 + 4 > 270) { doc.addPage(); y = 20; }
+    doc.text("• ", 15, y);
     doc.text(lines, 20, y);
     y += lines.length * 6 + 4;
   });
-  y += 5;
+  y += 4;
 
   // EVIDENCE-BACKED PARAMETERS
   if (protocol.evidence_items && protocol.evidence_items.length > 0) {
     addSectionHeader("EVIDENCE-BACKED PARAMETERS");
     protocol.evidence_items.forEach((item) => {
-      const lineText = `${item.parameter}: ${item.value || "Not specified in available evidence."} [Source: ${item.source?.title || "Knowledge Base"}]`;
-      const lines = doc.splitTextToSize("• " + lineText, 170);
-      if (y + lines.length * 6 + 4 > 265) { doc.addPage(); y = 20; }
+      const sourceDb = item.source?.database || "Literature";
+      const sourceId = item.source?.pmid ? `PMID:${item.source.pmid}` : (item.source?.doi ? `DOI:${item.source.doi}` : "");
+      const sourceStr = sourceId ? `${sourceDb} (${sourceId})` : sourceDb;
+      const lineText = `${item.parameter}: ${item.value || "Not specified"} [Type: ${item.evidence_type} | Source: ${sourceStr}]`;
+      
+      const lines = doc.splitTextToSize(lineText, 170);
+      if (y + lines.length * 6 + 4 > 270) { doc.addPage(); y = 20; }
+      doc.text("• ", 15, y);
       doc.text(lines, 20, y);
       y += lines.length * 6 + 4;
     });
-    y += 5;
+    y += 4;
   }
 
   // LIMITATIONS
   if (protocol.limitations && protocol.limitations.length > 0) {
     addSectionHeader("LIMITATIONS");
     protocol.limitations.forEach((limit) => {
-      const lines = doc.splitTextToSize("• " + limit, 170);
-      if (y + lines.length * 6 + 4 > 265) { doc.addPage(); y = 20; }
+      const lines = doc.splitTextToSize(limit, 170);
+      if (y + lines.length * 6 + 4 > 270) { doc.addPage(); y = 20; }
+      doc.text("• ", 15, y);
       doc.text(lines, 20, y);
       y += lines.length * 6 + 4;
     });
-    y += 5;
+    y += 4;
   }
 
   // SCIENTIFIC REFERENCES
@@ -456,7 +422,8 @@ export function downloadReferenceProtocolPDF(protocol, tissue = "General") {
             const journalStr = ref.journal ? `. ${ref.journal}` : "";
             const doiStr = ref.doi ? ` [DOI: ${ref.doi}]` : "";
             const pmidStr = ref.pmid ? ` [PMID: ${ref.pmid}]` : "";
-            cleanRefs.push(`${authorStr}${yearStr}${titleStr}${journalStr}${doiStr}${pmidStr}`);
+            const pmcidStr = ref.pmcid ? ` [PMCID: ${ref.pmcid}]` : "";
+            cleanRefs.push(`${authorStr}${yearStr}${titleStr}${journalStr}${doiStr}${pmidStr}${pmcidStr}`);
           }
         }
       }
@@ -469,22 +436,38 @@ export function downloadReferenceProtocolPDF(protocol, tissue = "General") {
 
   addSectionHeader("SCIENTIFIC REFERENCES");
   cleanRefs.forEach((note) => {
-    const lines = doc.splitTextToSize("• " + note, 170);
-    if (y + lines.length * 6 + 4 > 265) { doc.addPage(); y = 20; }
+    const lines = doc.splitTextToSize(note, 170);
+    if (y + lines.length * 6 + 4 > 270) { doc.addPage(); y = 20; }
+    doc.text("• ", 15, y);
     doc.text(lines, 20, y);
     y += lines.length * 6 + 4;
   });
+  y += 4;
+
+  // RESEARCH-USE ONLY DISCLAIMER
+  if (y + 20 > 270) { doc.addPage(); y = 20; }
+  doc.line(15, y, 195, y);
+  y += 6;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Research-Use Only Disclaimer:", 15, y);
+  doc.setFont("helvetica", "normal");
+  const disclaimerText = "This protocol is generated automatically for research use only. It has not been approved for clinical diagnostic or therapeutic procedures. The values extracted are subject to experimental validation.";
+  const disclaimerLines = doc.splitTextToSize(disclaimerText, 175);
+  y += 4;
+  doc.text(disclaimerLines, 15, y);
+  y += disclaimerLines.length * 5 + 6;
 
   // Status
-  if (y + 15 > 265) { doc.addPage(); y = 20; }
+  if (y + 10 > 270) { doc.addPage(); y = 20; }
   doc.setFont("helvetica", "bold");
   doc.text("Status:", 15, y);
   doc.setFont("helvetica", "normal");
   doc.text(protocol.status || "Reference", 32, y);
 
   // Footer
-  doc.setFontSize(10);
+  doc.setFontSize(8);
   doc.text("Generated automatically by BioInkAI v2.0", 105, 285, { align: "center" });
 
-  doc.save(`BioInkAI_${tissue || "General"}_Standard_Reference_Protocol.pdf`);
+  doc.save(`BioInkAI_${tissue || "General"}_Literature_Reference_Protocol.pdf`);
 }
