@@ -3,6 +3,12 @@ FastAPI integration layer for BioInkAI Prediction Engine.
 Provides health, version, material, project CRUD, tissue recommendation, and prediction endpoints.
 """
 
+import os
+import json
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -106,6 +112,13 @@ class DesignerPredictionRequest(BaseModel):
     tissue: str = Field(..., description="Target tissue type, e.g. 'Cartilage'")
     materials: List[MaterialInput] = Field(..., min_items=1, description="List of biomaterials")
     finalMixing: FinalMixingInput = Field(..., description="Final mixing parameters")
+
+class ChatMessage(BaseModel):
+    role: str
+    text: str
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
 
 class ProjectCreate(BaseModel):
     """Payload for creating a new project."""
@@ -311,6 +324,28 @@ def literature_search(request: DesignerPredictionRequest) -> Dict[str, Any]:
             "total_results": len(records),
             "results": [r.to_dict() for r in records],
         }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+from llm.chat_assistant import generate_chat_response
+
+@app.post("/chat")
+def chat_endpoint(request: ChatRequest) -> Dict[str, Any]:
+    """Interactive chat endpoint with context from projects and experiments."""
+    try:
+        # Gather DB context
+        projects = db_get_projects()
+        experiments = db_get_experiments()
+        db_context = {
+            "projects": projects,
+            "experiments": experiments
+        }
+        
+        # Convert pydantic models to dicts
+        messages = [{"role": m.role, "text": m.text} for m in request.messages]
+        
+        response_text = generate_chat_response(messages, db_context)
+        return {"response": response_text}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -587,3 +622,4 @@ class RestoreRequest(BaseModel):
 @app.post("/migration/restore")
 def migration_restore(req: RestoreRequest) -> Dict[str, Any]:
     return migration_engine.restore_backup(req.backup_filename)
+# Trigger reload

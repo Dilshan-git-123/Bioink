@@ -22,7 +22,7 @@ def _get_client():
     """Lazily initialize the Gemini client. Returns None if key is missing."""
     global _CLIENT, _INITIALIZED
 
-    if _INITIALIZED:
+    if _INITIALIZED and _CLIENT is not None:
         return _CLIENT
 
     _INITIALIZED = True
