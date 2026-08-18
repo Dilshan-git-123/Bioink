@@ -70,3 +70,5 @@ export async function duplicateExperiment(id) {
   if (!res.ok) throw new Error('Failed to duplicate experiment');
   return res.json();
 }
+
+

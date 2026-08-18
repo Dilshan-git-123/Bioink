@@ -51,7 +51,7 @@ const KnowledgeBase = () => {
 
     const fetchLogs = async () => {
         try {
-            const res = await fetch('http://localhost:8000/migration/logs');
+            const res = await fetch('http://127.0.0.1:8000/migration/logs');
             const data = await res.json();
             if (res.ok) setLogs(data.logs || []);
         } catch (err) {
@@ -61,7 +61,7 @@ const KnowledgeBase = () => {
 
     const fetchBackups = async () => {
         try {
-            const res = await fetch('http://localhost:8000/migration/backups');
+            const res = await fetch('http://127.0.0.1:8000/migration/backups');
             const data = await res.json();
             if (res.ok) {
                 setBackups(data.backups || []);
@@ -91,7 +91,7 @@ const KnowledgeBase = () => {
         setGenNotification(null);
 
         try {
-            const response = await fetch('http://localhost:8000/materials/generate', {
+            const response = await fetch('http://127.0.0.1:8000/materials/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -114,7 +114,7 @@ const KnowledgeBase = () => {
         setMaintenanceNotification(null);
         setMigrationResult(null);
         try {
-            const res = await fetch('http://localhost:8000/migration/preview');
+            const res = await fetch('http://127.0.0.1:8000/migration/preview');
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || 'Failed to fetch preview.');
             setPreviewData(data.preview);
@@ -130,7 +130,7 @@ const KnowledgeBase = () => {
         setMaintenanceNotification(null);
         setPreviewData(null);
         try {
-            const res = await fetch('http://localhost:8000/migration/run', { method: 'POST' });
+            const res = await fetch('http://127.0.0.1:8000/migration/run', { method: 'POST' });
             const data = await res.json();
             if (!res.ok) throw new Error(data.detail || 'Migration failed.');
             
@@ -150,7 +150,7 @@ const KnowledgeBase = () => {
         setMaintenanceLoading(true);
         setMaintenanceNotification(null);
         try {
-            const res = await fetch('http://localhost:8000/migration/restore', {
+            const res = await fetch('http://127.0.0.1:8000/migration/restore', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ backup_filename: selectedBackup })
@@ -496,3 +496,4 @@ const KnowledgeBase = () => {
 };
 
 export default KnowledgeBase;
+

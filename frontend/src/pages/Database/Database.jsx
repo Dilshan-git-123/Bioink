@@ -177,10 +177,12 @@ const Database = () => {
                 <div className="db-detail-panel">
                     {selectedBioink ? (
                         <>
-                            <div className="detail-header">
-                                <span className="detail-category">{selectedBioink.category}</span>
-                                <h2>{selectedBioink.name}</h2>
-                                <p className="detail-id">ID: {selectedBioink.id}</p>
+                            <div className="db-material-header">
+                                <div className="db-material-header-top">
+                                    <span className="db-material-category">{selectedBioink.category}</span>
+                                    <p className="db-material-id">ID: {selectedBioink.id}</p>
+                                </div>
+                                <h2 className="db-material-title">{selectedBioink.name}</h2>
                             </div>
                             
                             <div className="detail-desc">

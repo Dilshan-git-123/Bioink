@@ -24,6 +24,7 @@ export const generateProtocol = async (payload) => {
   return await response.json();
 };
 
+
 export const generateReferenceProtocol = async (payload) => {
   const response = await fetch(`${API_URL}/protocol/reference`, {
     method: "POST",

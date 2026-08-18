@@ -189,6 +189,7 @@ export function downloadProtocolPDF(protocol, tissue = "General") {
 
 }
 
+
 export function normalizeProtocolStep(step, index) {
   if (typeof step === 'string') {
     return {
