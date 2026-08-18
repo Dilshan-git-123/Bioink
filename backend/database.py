@@ -41,7 +41,15 @@ def init_db():
             created_at TEXT NOT NULL,
             last_login TEXT,
             reset_token TEXT DEFAULT NULL,
-            reset_token_expiry TEXT DEFAULT NULL
+            reset_token_expiry TEXT DEFAULT NULL,
+            role TEXT DEFAULT NULL,
+            institution TEXT DEFAULT NULL,
+            department TEXT DEFAULT NULL,
+            research_interests TEXT DEFAULT NULL,
+            bio TEXT DEFAULT NULL,
+            location TEXT DEFAULT NULL,
+            website TEXT DEFAULT NULL,
+            phone TEXT DEFAULT NULL
         )
     """)
     # Perform migration for older schemas
@@ -57,6 +65,10 @@ def init_db():
         cursor.execute("ALTER TABLE users ADD COLUMN reset_token TEXT DEFAULT NULL")
     if "reset_token_expiry" not in existing_columns:
         cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expiry TEXT DEFAULT NULL")
+    # Profile extension columns
+    for col in ["role", "institution", "department", "research_interests", "bio", "location", "website", "phone"]:
+        if col not in existing_columns:
+            cursor.execute(f"ALTER TABLE users ADD COLUMN {col} TEXT DEFAULT NULL")
     conn.commit()
     conn.close()
     # Initialize experiments table
@@ -208,12 +220,37 @@ def db_create_user(user: Dict[str, Any]) -> Dict[str, Any]:
 def db_get_user_by_id(user_id: str) -> Optional[Dict[str, Any]]:
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, email, provider, provider_id, profile_picture, created_at, last_login, reset_token, reset_token_expiry FROM users WHERE id = ?", (user_id,))
+    cursor.execute(
+        """SELECT id, name, email, provider, provider_id, profile_picture,
+               created_at, last_login, reset_token, reset_token_expiry,
+               role, institution, department, research_interests, bio, location, website, phone
+           FROM users WHERE id = ?""",
+        (user_id,)
+    )
     row = cursor.fetchone()
     conn.close()
     if row:
         return dict(row)
     return None
+
+def db_update_user_profile(user_id: str, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Update editable profile fields for a user. Returns the updated user dict."""
+    allowed = {"name", "role", "institution", "department", "research_interests", "bio", "location", "website", "phone", "profile_picture"}
+    query_parts = []
+    params = []
+    for key, val in updates.items():
+        if key in allowed:
+            query_parts.append(f"{key} = ?")
+            params.append(val)
+    if not query_parts:
+        return db_get_user_by_id(user_id)
+    params.append(user_id)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(f"UPDATE users SET {', '.join(query_parts)} WHERE id = ?", tuple(params))
+    conn.commit()
+    conn.close()
+    return db_get_user_by_id(user_id)
 
 def db_get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
     if not email:

@@ -42,6 +42,10 @@ from schemas.experiment import (
     ExperimentRead,
 )
 
+from optimizer import optimize_bioink
+from protocol_generator import generate_protocol
+import migration_engine
+
 init_db()
 
 app = FastAPI(
@@ -50,19 +54,24 @@ app = FastAPI(
     description="Scientific Bioink Prediction Engine",
 )
 
-app.include_router(auth_router)
-
-# CORS Configuration
+# CORS Configuration — must be added BEFORE include_router so the middleware
+# wraps every route (including /auth/*). If added after, browser preflight
+# OPTIONS requests never receive Access-Control-Allow-* headers, causing
+# "Failed to fetch" in the React frontend.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router)
 
 # -------------------------------------------------------------------
 # Pydantic models — typed to match the current Designer.jsx payload
@@ -383,3 +392,55 @@ def duplicate_experiment(experiment_id: str) -> Dict[str, Any]:
     if not duplicated:
         raise HTTPException(status_code=500, detail="Failed to duplicate experiment")
     return duplicated
+
+
+# -------------------------------------------------------------------
+# Optimizer endpoint
+# -------------------------------------------------------------------
+@app.post("/optimize")
+def optimize(request: DesignerPredictionRequest) -> Dict[str, Any]:
+    """Optimize the bioink formulation based on the current prediction."""
+    return optimize_bioink(
+        [m.dict() for m in request.materials],
+        request.finalMixing.dict()
+    )
+
+
+# -------------------------------------------------------------------
+# Protocol endpoint
+# -------------------------------------------------------------------
+@app.post("/protocol")
+def protocol(request: DesignerPredictionRequest) -> Dict[str, Any]:
+    """Generate a laboratory protocol for the given formulation."""
+    return generate_protocol(
+        [m.dict() for m in request.materials],
+        request.finalMixing.dict(),
+        request.tissue
+    )
+
+
+# -------------------------------------------------------------------
+# Migration endpoints
+# -------------------------------------------------------------------
+@app.get("/migration/logs")
+def migration_logs() -> Dict[str, Any]:
+    return migration_engine.get_migration_logs()
+
+@app.get("/migration/backups")
+def migration_backups() -> Dict[str, Any]:
+    return migration_engine.get_backups_list()
+
+@app.get("/migration/preview")
+def migration_preview() -> Dict[str, Any]:
+    return migration_engine.preview_migration_engine()
+
+@app.post("/migration/run")
+def migration_run() -> Dict[str, Any]:
+    return migration_engine.run_migration_engine()
+
+class RestoreRequest(BaseModel):
+    backup_filename: str
+
+@app.post("/migration/restore")
+def migration_restore(req: RestoreRequest) -> Dict[str, Any]:
+    return migration_engine.restore_backup(req.backup_filename)

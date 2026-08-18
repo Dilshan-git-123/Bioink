@@ -43,10 +43,31 @@ class UserResponse(BaseModel):
     profile_picture: Optional[str] = None
     created_at: str
     last_login: Optional[str] = None
+    # Extended profile fields
+    role: Optional[str] = None
+    institution: Optional[str] = None
+    department: Optional[str] = None
+    research_interests: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+    phone: Optional[str] = None
 
     class Config:
         orm_mode = True
         from_attributes = True
+
+class ProfileUpdate(BaseModel):
+    """Payload for updating the authenticated user's own profile."""
+    name: Optional[str] = Field(None, min_length=1)
+    role: Optional[str] = None
+    institution: Optional[str] = None
+    department: Optional[str] = None
+    research_interests: Optional[str] = None
+    bio: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+    phone: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str

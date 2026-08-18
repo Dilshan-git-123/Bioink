@@ -1,13 +1,13 @@
 import datetime
 import uuid
 import secrets
-from fastapi import APIRouter, HTTPException, Depends, status
-from database import db_get_user_by_email, db_create_user, db_update_user_last_login, db_get_user_by_id, db_update_user_reset_token, db_get_user_by_reset_token, db_update_user_password
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, File
+from database import db_get_user_by_email, db_create_user, db_update_user_last_login, db_get_user_by_id, db_update_user_reset_token, db_get_user_by_reset_token, db_update_user_password, db_update_user_profile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import requests
-from auth.schemas import UserRegister, TokenResponse, UserLogin, UserResponse, OAuthLogin, ForgotPasswordRequest, ResetPasswordRequest
+from auth.schemas import UserRegister, TokenResponse, UserLogin, UserResponse, OAuthLogin, ForgotPasswordRequest, ResetPasswordRequest, ProfileUpdate
 from services.email_service import send_reset_email
 from auth.jwt_handler import create_access_token, verify_token
 from auth.password_handler import hash_password, verify_password, is_bcrypt_hash
@@ -141,6 +141,46 @@ def get_me(current_user: dict = Depends(get_current_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred fetching user profile: {str(e)}"
         )
+
+@router.put("/me", response_model=UserResponse)
+def update_profile(data: ProfileUpdate, current_user: dict = Depends(get_current_user)):
+    """Update the current user's editable profile fields."""
+    try:
+        updates = {k: v for k, v in data.dict().items() if v is not None}
+        if not updates:
+            return current_user
+        updated = db_update_user_profile(current_user["id"], updates)
+        if not updated:
+            raise HTTPException(status_code=500, detail="Failed to update profile")
+        return updated
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred updating profile: {str(e)}"
+        )
+
+@router.post("/me/avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload a profile picture. Stored as base64 data URL in the database."""
+    import base64
+    # Validate content type
+    if file.content_type not in ("image/jpeg", "image/png", "image/gif", "image/webp"):
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, GIF, and WebP images are supported.")
+    contents = await file.read()
+    # Limit to 2 MB
+    if len(contents) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Image must be smaller than 2 MB.")
+    b64 = base64.b64encode(contents).decode("utf-8")
+    data_url = f"data:{file.content_type};base64,{b64}"
+    updated = db_update_user_profile(current_user["id"], {"profile_picture": data_url})
+    if not updated:
+        raise HTTPException(status_code=500, detail="Failed to save avatar")
+    return updated
 
 @router.post("/logout")
 def logout(current_user: dict = Depends(get_current_user)):
