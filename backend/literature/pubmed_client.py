@@ -154,6 +154,7 @@ def search_pubmed(query: str, max_results: int = 8) -> List[LiteratureRecord]:
             abstract=None,   # ESummary does not include abstract; use EFetch for that (future)
             source_database="PubMed",
             full_text_available=full_text_available,
+            access_level="metadata_only",
             url=article_url,
         ))
 

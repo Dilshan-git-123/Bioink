@@ -386,7 +386,7 @@ def build_literature_reference_protocol(
         }]
 
     # Limitations -- dynamic, reflecting actual availability of full-text papers (Bug 10)
-    full_text_count = sum(1 for rec in top_records if rec.full_text_available)
+    full_text_count = sum(1 for rec in top_records if rec.access_level == "full_text" or (rec.full_text_available and bool(rec.sections)))
     abstract_only_count = len(top_records) - full_text_count
 
     limitations = []
@@ -554,7 +554,8 @@ def build_literature_reference_protocol_with_llm(
         ev_type_counts[t] = ev_type_counts.get(t, 0) + 1
 
     full_text_refs = sum(
-        1 for r in base_protocol.get("references", []) if r.get("full_text_available")
+        1 for r in base_protocol.get("references", [])
+        if r.get("access_level") == "full_text" or r.get("full_text_available")
     )
     total_refs = sum(
         1 for r in base_protocol.get("references", [])

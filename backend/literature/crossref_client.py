@@ -114,6 +114,7 @@ def search_crossref(query: str, max_results: int = 8) -> List[LiteratureRecord]:
             abstract=abstract,
             source_database="Crossref",
             full_text_available=False,  # Crossref links to publisher; open-access unknown
+            access_level="abstract" if abstract else "metadata_only",
             url=url_link,
         ))
 

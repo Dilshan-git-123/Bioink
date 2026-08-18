@@ -179,5 +179,12 @@ def retrieve_literature(
     unique_records = _dedup(all_records)
     ranked = rank_records(unique_records, materials, tissue, crosslinker)
 
+    # Hydrate open-access full-text sections for top ranked records
+    try:
+        from literature.full_text_service import hydrate_records_full_text
+        ranked = hydrate_records_full_text(ranked, max_full_text=5)
+    except Exception as exc:
+        logger.warning("Full-text hydration failed: %s", exc)
+
     _cache_set(cache_key, ranked)
     return ranked, search_query

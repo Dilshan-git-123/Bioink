@@ -122,13 +122,40 @@ def merge_evidence_with_kb(
 
 def _gemini_item_to_dict(item: ExtractedEvidenceItem) -> Dict:
     """Convert a validated Gemini evidence item to the standard dict format."""
-    # Determine source location from access context
-    source_location = "Literature (Gemini Extracted)"
-    if item.source_id:
+    # Determine source location from extracted item or access context
+    if item.source_location and item.source_location.strip():
+        loc = item.source_location.strip()
+        if "gemini" not in loc.lower():
+            source_location = f"{loc} (Full-text / Gemini AI extraction)" if item.evidence_type == "experimental" else f"{loc} (Gemini AI extraction)"
+        else:
+            source_location = loc
+    elif item.source_id:
         if item.evidence_type == "experimental":
             source_location = "Full-text / Gemini AI extraction"
         else:
             source_location = "Abstract / Gemini AI extraction"
+    else:
+        source_location = "Literature (Gemini Extracted)"
+
+    doi = None
+    pmid = None
+    pmcid = None
+    if item.source_id:
+        sid = item.source_id.strip()
+        if sid.startswith("DOI:"):
+            doi = sid.replace("DOI:", "").strip()
+        elif sid.startswith("PMID:"):
+            pmid = sid.replace("PMID:", "").strip()
+        elif sid.startswith("PMCID:"):
+            pmcid_part = sid.replace("PMCID:", "").strip()
+            if "(" in pmcid_part:
+                pmcid = pmcid_part.split("(")[0].strip()
+                if "PMID:" in pmcid_part:
+                    pmid = pmcid_part.split("PMID:")[1].rstrip(")").strip()
+            else:
+                pmcid = pmcid_part
+        elif sid.startswith("PMC"):
+            pmcid = sid
 
     return {
         "parameter": item.parameter,
@@ -149,9 +176,9 @@ def _gemini_item_to_dict(item: ExtractedEvidenceItem) -> Dict:
         },
         "source": {
             "title": None,
-            "doi": item.source_id.replace("DOI:", "") if item.source_id and item.source_id.startswith("DOI:") else None,
-            "pmid": item.source_id.replace("PMID:", "") if item.source_id and item.source_id.startswith("PMID:") else None,
-            "pmcid": None,
+            "doi": doi,
+            "pmid": pmid,
+            "pmcid": pmcid,
             "database": "Literature (Gemini Extracted)",
         },
         "note": item.evidence_text,
