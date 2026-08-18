@@ -15,3 +15,5 @@ export async function runPrediction(data) {
 
   return await response.json();
 }
+
+

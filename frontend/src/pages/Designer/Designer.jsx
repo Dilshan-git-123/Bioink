@@ -295,8 +295,6 @@ function Designer() {
           </div>
         </div>
       </div>
-
-      <button className="floating-ai-btn" onClick={() => alert("BioInkAI Assistant will be available soon.")} aria-label="BioInkAI Assistant">🤖</button>
     </>
   );
 }

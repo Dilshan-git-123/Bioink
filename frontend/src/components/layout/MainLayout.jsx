@@ -1,9 +1,10 @@
 import React from 'react';
 import Sidebar from '../Sidebar';
 import Header from '../Header';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 const MainLayout = ({ children }) => {
+  const navigate = useNavigate();
   return (
     <div className="app-layout">
       <Sidebar />
@@ -13,6 +14,13 @@ const MainLayout = ({ children }) => {
           {children || <Outlet />}
         </div>
       </div>
+      <button 
+        className="floating-ai-btn" 
+        onClick={() => navigate('/assistant')} 
+        aria-label="BioInkAI Assistant"
+      >
+        🤖
+      </button>
     </div>
   );
 };

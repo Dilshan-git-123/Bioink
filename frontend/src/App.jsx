@@ -18,6 +18,7 @@ import Assistant from "./pages/Assistant/Assistant";
 import Settings from "./pages/Settings/Settings";
 import KnowledgeBase from "./pages/KnowledgeBase/KnowledgeBase";
 import Projects from "./pages/Projects/Projects.jsx";
+import Profile from "./pages/Profile/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { getCurrentUser, isAuthenticated } from "./services/authService";
 import "./styles/layout.css";
@@ -87,6 +88,7 @@ function App() {
               <Route path="/assistant" element={<Assistant />} />
               <Route path="/knowledge-base" element={<KnowledgeBase />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
           </Route>
 
