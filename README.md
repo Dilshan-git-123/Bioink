@@ -214,7 +214,7 @@ This project is currently under active development and a license will be added b
 
 ---
 
-## 🧑‍💻 Developer
+## 🧑‍💻 Founder and Developer
 
 **GT**  
 *Bachelor of Engineering – Artificial Intelligence*
@@ -225,3 +225,15 @@ This project is currently under active development and a license will be added b
 * Tissue Engineering & Biomaterials
 * 3D Bioprinting Systems
 * Biomedical Software Engineering
+
+## 🧑‍💻 Developer
+
+**Hameed Ibrahim**  
+*Bachelor of Engineering – Artificial Intelligence*
+
+**Research Interests:**
+* Artificial Intelligence / machine learning
+* Bioinformatics 
+* Tissue Engineering & Biomaterials
+* Biomedical Software Engineering
+
